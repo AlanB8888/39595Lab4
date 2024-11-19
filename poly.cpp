@@ -6,16 +6,16 @@ polynomial::polynomial(){
 }
 
 template <typename Iter>
-polynomial::polynomial(Iter begin, Iter end)
+polynomial::polynomial(Iter begin, Iter end) //constructor from iterators
 {
     polyVec.insert(polyVec.end(), begin, end);
 }
 
-polynomial::polynomial(const polynomial &other):polyVec(other.polyVec) 
+polynomial::polynomial(const polynomial &other):polyVec(other.polyVec) //copy constructor
 {
 }
 
-polynomial &polynomial::operator=(const polynomial &other)
+polynomial &polynomial::operator=(const polynomial &other) //assignmet for object
 {
     if (this == &other)
     {
@@ -24,4 +24,158 @@ polynomial &polynomial::operator=(const polynomial &other)
     polyVec = other.polyVec; //vector assignment is a deep copy
 
     return *this;
+}
+
+size_t polynomial::find_degree_of(){
+    
+    size_t curDeg = 0;
+    if (polyVec.empty()){
+        return curDeg;
+    }
+
+    for(std::pair<power, coeff>  term : polyVec){//all pairs as term in this are copys
+        if(term.first > curDeg && term.second != 0){
+            //vector is not ordered so need to iterate through and find highest power with nonzero coeff (maybe ordering could help for speed later)
+            curDeg = term.first;
+        }
+    } 
+    //done iterating, return highest degree found, if none found returns 0
+    return curDeg;
+}
+
+std::vector<std::pair<power, coeff>> polynomial::getPolyVec() const{
+    return polyVec;
+}
+
+//cannonical form function needs to take the polyVec and:
+    //
+    //1.combine like terms
+    //2. remove 0 coeff pairs other than (0,0)
+    //3. order from highest to lowest power
+    //4 determine wether to have the (0,0) pair
+
+std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
+
+
+    std::vector<std::pair<power, coeff>> ordVec;
+    std::vector<std::pair<power, coeff>> canVec;
+    
+    if (polyVec.empty()){ //if empty say its 0,0
+        ordVec.push_back(std::make_pair(0, 0));
+        return ordVec;
+    }
+
+ 
+    for(std::pair<power, coeff> term : polyVec){
+        bool found = false; //term  like power not found in ordVec yet
+        for(std::pair<power, coeff>  &termO : ordVec){
+            if(term.first == termO.first){ //found a like term
+                termO.second += term.second;
+                found = true;
+                break; //only want to add once in case of multiple of same term pairs in vec     
+            }
+        }  
+
+        if(!found){
+            ordVec.push_back(term); //did not find a like term, add it as new pair
+        }
+    }
+    //canVec should have all like terms combined, unordered by power
+    //order by power now
+    std::sort(ordVec.begin(), ordVec.end(), [](const std::pair<power, coeff> &a, const std::pair<power, coeff> &b) {
+        return a.first > b.first;  // sort by power, lergest at index 0
+    });
+    //now get rid of all 0 coeff terms
+    //just only add elem to canVec with no 0 coeff
+
+    for (std::pair<power, coeff> termNZ : ordVec){
+        if(termNZ.second != 0){
+           canVec.push_back(termNZ); //found non zero coeff term, add it
+        }
+    }
+    if (canVec.empty()){ //if empty say its 0,0
+        canVec.push_back(std::make_pair(0, 0));
+    }
+    return canVec;
+}
+
+//FREE FUNCTIONS
+
+polynomial operator+(const polynomial &lhs, const polynomial &rhs) {
+
+
+    //should i copy one and add the other to it
+    //or start with nothing and add both to it
+    //which will be faster with threads? i think second could, but first is simpler
+    //ill go with the first option for now
+
+
+    std::vector<std::pair<power, coeff>> sumVec = lhs.getPolyVec();
+    
+    //if like powers, combine coefficients and update vector, if new power add to vector
+    //combineing coeffs could be done in canonical form funct but it might be good to do here
+
+    //vector is not ordered so need to iterate through and find (maybe sort could help for speed later)
+    for(std::pair<power, coeff>  termR : rhs.getPolyVec()){//all pairs as term in this are copys            
+    bool found = false; //termR  like power not found in sumVec yet
+        for(std::pair<power, coeff>  &termS : sumVec){
+            if(termR.first == termS.first){ //found a like term
+                termS.second += termR.second;
+                found = true;
+                break; //only want to add once in case of multiple of same term pairs in vec     
+            }
+        }  
+
+        if(!found){
+            sumVec.push_back(termR); //did not find a like term, add it as new pair
+        }
+    }
+    
+    polynomial result(sumVec.begin(), sumVec.end());
+
+    return result;
+
+}
+
+
+polynomial operator+(const polynomial &lhs, int rhs) {
+
+    std::vector<std::pair<power, coeff>> sumVec = lhs.getPolyVec();
+    //check if 0 power term exists, if it does update it
+    bool found = false;
+    for(std::pair<power, coeff>  &termS : sumVec){
+        if(0 == termS.first){ //found a 0 power term
+            termS.second += rhs;
+            found = true;
+            break;     
+        }
+    }  
+
+    if(!found){
+        sumVec.push_back(std::make_pair(0,rhs)); //did not find a like term, add it as new pair
+    }
+    polynomial result(sumVec.begin(), sumVec.end());
+
+    return result;
+}
+
+polynomial operator+(int lhs, const polynomial &rhs) {
+
+    std::vector<std::pair<power, coeff>> sumVec = rhs.getPolyVec();
+    //check if 0 power term exists, if it does update it
+    bool found = false;
+    for(std::pair<power, coeff>  &termS : sumVec){
+        if(0 == termS.first){ //found a 0 power term
+            termS.second += lhs;
+            found = true;
+            break;     
+        }
+    }  
+
+    if(!found){
+        sumVec.push_back(std::make_pair(0,lhs)); //did not find a like term, add it as new pair
+    }
+    polynomial result(sumVec.begin(), sumVec.end());
+
+    return result;
 }

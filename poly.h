@@ -1,6 +1,7 @@
 #ifndef POLY_H
 #define POLY_H
 
+#include <algorithm>
 #include <vector>
 #include <utility>
 #include <cstddef>
@@ -93,7 +94,7 @@ public:
      * @brief Returns the polyVec Vector of the desired polynomial object
      *
      * @return std::vector<std::pair<power, coeff>>
-     * probably similar to canonical form, may differ in how the 0 polynomial is represented
+     * not sorted, may differ in how the 0 polynomial is represented with a 0,0 pair or empty
      * use to give free operations access to polyVec
      */
     std::vector<std::pair<power, coeff>> getPolyVec() const;
