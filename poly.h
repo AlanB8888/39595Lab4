@@ -10,6 +10,9 @@ using coeff = int;
 
 class polynomial
 {
+private:
+
+    std::vector<std::pair<power, coeff>> polyVec;
 
 public:
     /**
