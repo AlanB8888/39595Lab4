@@ -90,6 +90,15 @@ public:
     size_t find_degree_of();
 
     /**
+     * @brief Returns the polyVec Vector of the desired polynomial object
+     *
+     * @return std::vector<std::pair<power, coeff>>
+     * probably similar to canonical form, may differ in how the 0 polynomial is represented
+     * use to give free operations access to polyVec
+     */
+    std::vector<std::pair<power, coeff>> getPolyVec() const;
+
+    /**
      * @brief Returns a vector that contains the polynomial is canonical form. This
      *        means that the power at index 0 is the largest power in the polynomial,
      *        the power at index 1 is the second largest power, etc.
@@ -111,5 +120,23 @@ public:
      */
     std::vector<std::pair<power, coeff>> canonical_form() const;
 };
+
+
+//free functions to support operations with int and polynomial (mult and add) modulo is free for consistency
+
+polynomial operator*(const polynomial &lhs, const polynomial &rhs);
+
+polynomial operator*(const polynomial &lhs, int rhs);
+
+polynomial operator*(int lhs, const polynomial &rhs);
+
+polynomial operator+(const polynomial &lhs, const polynomial &rhs);
+
+polynomial operator+(const polynomial &lhs, int rhs);
+
+polynomial operator+(int lhs, const polynomial &rhs);
+
+polynomial operator%(const polynomial &lhs, const polynomial &rhs);
+
 
 #endif
