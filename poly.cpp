@@ -131,6 +131,41 @@ std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
     return canVec;
 }
 
+bool polynomial::operator>(const polynomial &other)
+{
+    std::vector<std::pair<power, coeff>> v1 = canonical_form();
+    std::vector<std::pair<power, coeff>> v2 = other.canonical_form();
+
+    int smallerSize = (v1.size() > v2.size()) ? v2.size() : v1.size();
+
+    for(int i = 0; i < smallerSize; i++)
+    {
+        if(v1[i].first > v2[i].first) //If greater degree
+        {
+            return true;
+        }
+        else if(v1[i].first == v2[i].first) //same degree, check coefficients
+        {
+            if(v1[i].second > v2[i].second) //greater coefficient
+            {
+                return true;
+            }
+            else if(v1[i].second < v2[i].second) //smaller coefficeint
+            {
+                return false;
+            }
+            //continue if same coefficient
+        }
+        else //smaller degree
+        {
+            return false;
+        }
+    }
+
+    //If same polynomial, return false
+    return false;
+}
+
 //FREE FUNCTIONS
 
 polynomial operator+(const polynomial &lhs, const polynomial &rhs) {
@@ -195,6 +230,23 @@ polynomial operator*(const polynomial &lhs, const polynomial &rhs)
 
     return answer;
 
+}
+
+polynomial operator%(const polynomial &numer, const polynomial &denom)
+{
+    std::vector<std::pair<power, coeff>> v1 = numer.canonical_form();
+    std::vector<std::pair<power, coeff>> v2 = denom.canonical_form();
+
+    polynomial remainder = numer;
+
+    while(remainder > denom)
+    {
+        // Divide the first digit of the dividend by the divisor.
+        // Multiply the result by the divisor.
+        // Subtract the result from the dividend.
+        // Bring down the next digit of the dividend and repeat the process.
+        // The remainder is the amount left over after the last subtraction if it's less than the divisor. 
+    }
 }
 
 

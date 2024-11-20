@@ -127,6 +127,9 @@ public:
      *  A vector of pairs representing the canonical form of the polynomial
      */
     std::vector<std::pair<power, coeff>> canonical_form() const;
+
+    //user added for comparison
+    bool operator>(const polynomial &other);
 };
 
 
@@ -136,7 +139,7 @@ polynomial operator*(const polynomial &lhs, const polynomial &rhs);
 
 polynomial operator+(const polynomial &lhs, const polynomial &rhs);
 
-//polynomial operator%(const polynomial &lhs, const polynomial &rhs);
+polynomial operator%(const polynomial &lhs, const polynomial &rhs);
 
 
 #endif
