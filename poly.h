@@ -139,7 +139,7 @@ polynomial operator*(const polynomial &lhs, const polynomial &rhs);
 
 polynomial operator+(const polynomial &lhs, const polynomial &rhs);
 
-std::pair<power, coeff> operator/(std::pair<power, coeff>& numer, std::pair<power, coeff>& div);
+std::pair<power, coeff> operator/(const std::pair<power, coeff>& numer, const std::pair<power, coeff>& div);
 
 polynomial operator%(const polynomial &lhs, const polynomial &rhs);
 
