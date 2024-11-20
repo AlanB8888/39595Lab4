@@ -43,13 +43,20 @@ public:
      */
     polynomial(const polynomial &other);
 
+
+    //USER DEFINED TO CONVERT AN INTEGER TO POLYNOMIAL
+    polynomial(int k); //copy from integer 
+
+    //USER DEFINED TO CONVERT AN std::pair<power, coeff> TO POLYNOMIAL
+    polynomial(std::pair<power, coeff> pair); //copy from integer 
+
     /**
      * @brief Prints the polynomial.
      *
      * Only used for debugging, isn't graded.
      *
      */
-    void print() const;
+    void print();
 
     /**
      * @brief Turn the current polynomial instance into a deep copy of another
@@ -88,7 +95,7 @@ public:
      * @return size_t
      *  The degree of the polynomial
      */
-    size_t find_degree_of();
+    size_t find_degree_of() const;
 
     /**
      * @brief Returns the polyVec Vector of the desired polynomial object
@@ -127,17 +134,9 @@ public:
 
 polynomial operator*(const polynomial &lhs, const polynomial &rhs);
 
-polynomial operator*(const polynomial &lhs, int rhs);
-
-polynomial operator*(int lhs, const polynomial &rhs);
-
 polynomial operator+(const polynomial &lhs, const polynomial &rhs);
 
-polynomial operator+(const polynomial &lhs, int rhs);
-
-polynomial operator+(int lhs, const polynomial &rhs);
-
-polynomial operator%(const polynomial &lhs, const polynomial &rhs);
+//polynomial operator%(const polynomial &lhs, const polynomial &rhs);
 
 
 #endif

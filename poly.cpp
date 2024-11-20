@@ -1,4 +1,5 @@
 #include "poly.h"
+#include <iostream>
 
 polynomial::polynomial(){
     polyVec.push_back(std::make_pair(0, 0)); //construct with 0 coeff 0 power only
@@ -15,6 +16,37 @@ polynomial::polynomial(const polynomial &other):polyVec(other.polyVec) //copy co
 {
 }
 
+polynomial::polynomial(int k) //copy from integer 
+{
+    std::vector<std::pair<power, coeff>> poly = {{0, k}};
+    this->polyVec = poly;
+}
+
+polynomial::polynomial(std::pair<power, coeff> pair)
+{
+    std::vector<std::pair<power, coeff>> poly = {pair};
+    this->polyVec = poly;
+}
+
+void polynomial::print()
+{
+    std::vector<std::pair<power, coeff>> poly = this->canonical_form();
+    std::vector<std::pair<power, coeff>>::iterator start = poly.begin();
+    std::vector<std::pair<power, coeff>>::iterator end = poly.end();
+    
+    while(start != end)
+    {
+        std::cout << (*start).second << "x^" << (*start).first << " ";
+        start++;
+        if(start != end)
+        {
+            std::cout << "+ ";
+        }
+    }
+
+    std::cout << "\n";
+}
+
 polynomial &polynomial::operator=(const polynomial &other) //assignmet for object
 {
     if (this == &other)
@@ -26,7 +58,7 @@ polynomial &polynomial::operator=(const polynomial &other) //assignmet for objec
     return *this;
 }
 
-size_t polynomial::find_degree_of(){
+size_t polynomial::find_degree_of() const{
     
     size_t curDeg = 0;
     if (polyVec.empty()){
@@ -137,45 +169,73 @@ polynomial operator+(const polynomial &lhs, const polynomial &rhs) {
 
 }
 
-
-polynomial operator+(const polynomial &lhs, int rhs) {
-
-    std::vector<std::pair<power, coeff>> sumVec = lhs.getPolyVec();
-    //check if 0 power term exists, if it does update it
-    bool found = false;
-    for(std::pair<power, coeff>  &termS : sumVec){
-        if(0 == termS.first){ //found a 0 power term
-            termS.second += rhs;
-            found = true;
-            break;     
-        }
-    }  
-
-    if(!found){
-        sumVec.push_back(std::make_pair(0,rhs)); //did not find a like term, add it as new pair
-    }
-    polynomial result(sumVec.begin(), sumVec.end());
-
-    return result;
+std::pair<power, coeff> multiply2terms(std::pair<power, coeff> t1, std::pair<power, coeff> t2)
+{
+    return {t1.first + t2.first, t1.second * t2.second};
 }
 
-polynomial operator+(int lhs, const polynomial &rhs) {
+polynomial operator*(const polynomial &lhs, const polynomial &rhs) 
+{
+    // size_t degree = lhs.find_degree_of() + rhs.find_degree_of();
+    polynomial answer;
+    std::vector<std::pair<power, coeff>> lhsPoly = lhs.getPolyVec();
+    std::vector<std::pair<power, coeff>> rhsPoly = rhs.getPolyVec();
 
-    std::vector<std::pair<power, coeff>> sumVec = rhs.getPolyVec();
-    //check if 0 power term exists, if it does update it
-    bool found = false;
-    for(std::pair<power, coeff>  &termS : sumVec){
-        if(0 == termS.first){ //found a 0 power term
-            termS.second += lhs;
-            found = true;
-            break;     
+    //TODO: make this multithreaded
+    //Multiply each term with each other term in the other polynomial and sum everything
+    for(std::pair<power, coeff> pairL : lhsPoly)
+    {
+        for(std::pair<power, coeff> pairR : rhsPoly)
+        {
+            polynomial product = multiply2terms(pairL, pairR);
+            answer = answer + product; //TODO: check if this causes errors IDK if default constructor works here
         }
-    }  
 
-    if(!found){
-        sumVec.push_back(std::make_pair(0,lhs)); //did not find a like term, add it as new pair
     }
-    polynomial result(sumVec.begin(), sumVec.end());
 
-    return result;
+    return answer;
+
 }
+
+
+// polynomial operator+(const polynomial &lhs, int rhs) {
+
+//     std::vector<std::pair<power, coeff>> sumVec = lhs.getPolyVec();
+//     //check if 0 power term exists, if it does update it
+//     bool found = false;
+//     for(std::pair<power, coeff>  &termS : sumVec){
+//         if(0 == termS.first){ //found a 0 power term
+//             termS.second += rhs;
+//             found = true;
+//             break;     
+//         }
+//     }  
+
+//     if(!found){
+//         sumVec.push_back(std::make_pair(0,rhs)); //did not find a like term, add it as new pair
+//     }
+//     polynomial result(sumVec.begin(), sumVec.end());
+
+//     return result;
+// }
+
+// polynomial operator+(int lhs, const polynomial &rhs) {
+
+//     std::vector<std::pair<power, coeff>> sumVec = rhs.getPolyVec();
+//     //check if 0 power term exists, if it does update it
+//     bool found = false;
+//     for(std::pair<power, coeff>  &termS : sumVec){
+//         if(0 == termS.first){ //found a 0 power term
+//             termS.second += lhs;
+//             found = true;
+//             break;     
+//         }
+//     }  
+
+//     if(!found){
+//         sumVec.push_back(std::make_pair(0,lhs)); //did not find a like term, add it as new pair
+//     }
+//     polynomial result(sumVec.begin(), sumVec.end());
+
+//     return result;
+// }
