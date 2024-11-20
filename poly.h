@@ -129,7 +129,7 @@ public:
     std::vector<std::pair<power, coeff>> canonical_form() const;
 
     //user added for comparison
-    bool operator>(const polynomial &other);
+    bool operator>=(const polynomial &other);
 };
 
 
@@ -138,6 +138,8 @@ public:
 polynomial operator*(const polynomial &lhs, const polynomial &rhs);
 
 polynomial operator+(const polynomial &lhs, const polynomial &rhs);
+
+std::pair<power, coeff> operator/(std::pair<power, coeff>& numer, std::pair<power, coeff>& div);
 
 polynomial operator%(const polynomial &lhs, const polynomial &rhs);
 

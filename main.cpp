@@ -53,39 +53,63 @@ int main()
     // }
 
 
-    std::vector<std::pair<power, coeff>> input1 = {{5,7}, {2,3}, {1,1}, {0,1}};
-     std::vector<std::pair<power, coeff>> input2 = {{4,6}, {2,4}, {1,2}, {0,2}};
+    std::vector<std::pair<power, coeff>> input1 = {{2,2}, {1,2}, {0,2}};
+    std::vector<std::pair<power, coeff>> input2 = {{4,6}, {2,4}, {1,2}, {0,2}};
+    std::vector<std::pair<power, coeff>> input3 = {{9,10}, {6,6}, {4,4}, {0,2}};
 
     polynomial p1(input1.begin(), input1.end());
     polynomial p2(input2.begin(), input2.end());
+    polynomial p3(input3.begin(), input3.end());
 
-    //TEST SUMS:
+    // //TEST SUMS:
+    // //===================================================
+    // polynomial sum1 = p1 + p2;
+    // std::cout << "SUM 1: \n";
+    // sum1.print();
+
+    // polynomial sum2 = p1 + (int)5;
+    // std::cout << "SUM 2: \n";
+    // sum2.print();
+
+    // polynomial sum3 = (int)6 + p1;
+    // std::cout << "SUM 3: \n";
+    // sum3.print();
+
+    // //TEST MULTIPLY:
+    // //===================================================
+    // polynomial mul1 = p1 * p2;
+    // std::cout << "MUL 1: \n";
+    // mul1.print();
+
+    // polynomial mul2 = p1 * 5;
+    // std::cout << "MUL 2: \n";
+    // mul2.print();
+
+    // polynomial mul3 = 6 * p1;
+    // std::cout << "MUL 3: \n";
+    // mul3.print();
+
+    //TEST MODULUS:
     //===================================================
-    polynomial sum1 = p1 + p2;
-    std::cout << "SUM 1: \n";
-    sum1.print();
+    polynomial mod1 = p1 % p2;
+    std::cout << "MOD 1: \n";
+    mod1.print();
 
-    polynomial sum2 = p1 + (int)5;
-    std::cout << "SUM 2: \n";
-    sum2.print();
+    // polynomial mod2 = p1 % 2;
+    // std::cout << "MOD 2: \n";
+    // mod2.print();
 
-    polynomial sum3 = (int)6 + p1;
-    std::cout << "SUM 3: \n";
-    sum3.print();
+    polynomial mod3 = p1 % p1;
+    std::cout << "MOD 3: \n";
+    mod3.print();
 
-    //TEST MULTIPLY:
-    //===================================================
-    polynomial mul1 = p1 * p2;
-    std::cout << "MUL 1: \n";
-    mul1.print();
+    polynomial mod4 = p3 % p1;
+    std::cout << "MOD 4: \n";
+    mod4.print();
 
-    polynomial mul2 = p1 * 5;
-    std::cout << "MUL 2: \n";
-    mul2.print();
-
-    polynomial mul3 = 6 * p1;
-    std::cout << "MUL 3: \n";
-    mul3.print();
+    // polynomial mod5 = p3 % p1;
+    // std::cout << "MOD 5: \n";
+    // mod5.print();
 
 
 
