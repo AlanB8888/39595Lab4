@@ -28,6 +28,8 @@ polynomial::polynomial(std::pair<power, coeff> pair)
     this->polyVec = poly;
 }
 
+
+
 void polynomial::print()
 {
     std::vector<std::pair<power, coeff>> poly = this->canonical_form();
@@ -152,19 +154,18 @@ bool polynomial::operator>=(const polynomial &other)
 polynomial operator+(const polynomial &lhs, const polynomial &rhs) {
 
 
-    //should i copy one and add the other to it
-    //or start with nothing and add both to it
-    //which will be faster with threads? i think second could, but first is simpler
-    //ill go with the first option for now
+    //just add them, by joinng vecs, canonize/simplify somewhere else
 
 
     std::vector<std::pair<power, coeff>> sumVec = lhs.getPolyVec();
+    std::vector<std::pair<power, coeff>> addVec = rhs.getPolyVec();
+    sumVec.insert(sumVec.end(), addVec.begin(), addVec.end());//gg
     
     //if like powers, combine coefficients and update vector, if new power add to vector
     //combineing coeffs could be done in canonical form funct but it might be good to do here
 
     //vector is not ordered so need to iterate through and find (maybe sort could help for speed later)
-    for(std::pair<power, coeff>  termR : rhs.getPolyVec()){//all pairs as term in this are copys            
+    /*for(std::pair<power, coeff>  termR : rhs.getPolyVec()){//all pairs as term in this are copys            
     bool found = false; //termR  like power not found in sumVec yet
         for(std::pair<power, coeff>  &termS : sumVec){
             if(termR.first == termS.first){ //found a like term
@@ -177,7 +178,8 @@ polynomial operator+(const polynomial &lhs, const polynomial &rhs) {
         if(!found){
             sumVec.push_back(termR); //did not find a like term, add it as new pair
         }
-    }
+    }*/
+
     
     polynomial result(sumVec.begin(), sumVec.end());
 
@@ -285,3 +287,4 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
 
 //     return result;
 // } test
+

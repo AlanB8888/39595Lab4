@@ -90,19 +90,22 @@ int main()
      begin = std::chrono::steady_clock::now();//start clock to time adding   
      polynomial sum2 = ps1 + (int)5;
      end = std::chrono::steady_clock::now(); //end clock
-     //TAKES MUCH MUCH LESS THAN REVERSED int poly ORDER, 
-     //porbably has to do with the method favoring small polynomials second
+
      duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
      std::cout << "SUM 2 TIME: " << duration.count() << " ms\n";
      std::cout << "SUM 2: \n";
      //sum2.print();
 
+     begin = std::chrono::steady_clock::now();//start clock to time adding   
+     polynomial sum3 = (int)6 + ps1;
+     end = std::chrono::steady_clock::now(); //end clock
 
-     polynomial sum3 = (int)6 + ps1;//TAKES TOO LONG
-     //porbably has to do with the method favoring small polynomials second
+     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+     std::cout << "SUM 3 TIME: " << duration.count() << " ms\n";
      std::cout << "SUM 3: \n";
      //sum3.print();
-
+     
+     //relative timing fine
 
     // //TEST MULTIPLY:
     // //===================================================

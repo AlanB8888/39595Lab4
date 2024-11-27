@@ -143,5 +143,6 @@ std::pair<power, coeff> operator/(const std::pair<power, coeff>& numer, const st
 
 polynomial operator%(const polynomial &lhs, const polynomial &rhs);
 
-
+//allow this to called on vectors idk if nececarry actually
+//std::vector<std::pair<power, coeff>> canonizer(const std::vector<std::pair<power, coeff>> &tbc);
 #endif
