@@ -284,4 +284,4 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
 //     polynomial result(sumVec.begin(), sumVec.end());
 
 //     return result;
-// }
+// } test
