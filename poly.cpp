@@ -99,7 +99,54 @@ std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
         return ordVec;
     }
 
- 
+    ordVec = polyVec;
+    //start by sorting the polyvec by power
+    //order by power now
+    std::sort(ordVec.begin(), ordVec.end(), [](const std::pair<power, coeff> &a, const std::pair<power, coeff> &b) {
+        return a.first > b.first;  // sort by power, lergest at index 0
+    });
+
+    //ord vec is sorted by power now
+
+    std::vector<std::pair<power, coeff>>::iterator ordIt = ordVec.begin();
+    std::vector<std::pair<power, coeff>>::iterator ordItNext = ordIt;
+    std::vector<std::pair<power, coeff>>::iterator ordEnd = ordVec.end();
+    int curCoef = 0;
+    while(ordIt != ordEnd){
+        ordItNext = ordIt+1;
+        size_t itPower = ordIt->first;
+        if(ordItNext != ordEnd){
+            size_t nextItPower = ordItNext->first;
+            //every element is accumulated
+            curCoef = curCoef + ordIt->second;
+            if(itPower != nextItPower){
+                if(curCoef != 0){
+                    canVec.push_back(std::make_pair(itPower, curCoef));
+                    curCoef = 0;//reset coef accumulator for next power
+                }
+                ordIt++;
+            }
+            else{
+                //ddont need to add any terms yet, not done accumulation, just go to next iterator
+                ordIt++;
+            }
+        }else{
+            //orditnext is poining to end, ordit is pointing to last existing term
+            //can just accumulte and add
+            curCoef = curCoef + ordIt->second;
+            if(curCoef != 0){
+                canVec.push_back(std::make_pair(itPower, curCoef));
+                curCoef = 0;//reset coef accumulator for next power
+            }
+            ordIt++;
+        }
+    }
+
+    if (canVec.empty()){ //if empty say its 0,0
+        canVec.push_back(std::make_pair(0, 0));
+    }
+    return canVec;
+    /*
     for(std::pair<power, coeff> term : polyVec){
         bool found = false; //term  like power not found in ordVec yet
         for(std::pair<power, coeff>  &termO : ordVec){
@@ -131,6 +178,7 @@ std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
         canVec.push_back(std::make_pair(0, 0));
     }
     return canVec;
+    */
 }
 
 bool polynomial::operator>=(const polynomial &other)

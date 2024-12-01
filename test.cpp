@@ -91,7 +91,7 @@ int main()
      duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
      std::cout << "SUM 1 CANONIZATION TIME: " << duration.count() << " ms\n";
 
-     //sum1.print();
+     sum1.print();
 
      begin = std::chrono::steady_clock::now();//start clock to time adding   
      polynomial sum2 = ps1 + (int)5;
@@ -100,7 +100,7 @@ int main()
      duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
      std::cout << "SUM 2 TIME: " << duration.count() << " ms\n";
      std::cout << "SUM 2: \n";
-     //sum2.print();
+     sum2.print();
 
      begin = std::chrono::steady_clock::now();//start clock to time adding   
      polynomial sum3 = (int)6 + ps1;
