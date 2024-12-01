@@ -2,6 +2,7 @@
 #include <chrono>
 #include <optional>
 #include <vector>
+#include <thread>
 
 #include "poly.h"
 
@@ -60,14 +61,14 @@ int main()
     std::vector<std::pair<power, coeff>> inputSized1; //polynomial of [size1] terms of form  1+2x+3x^2+4^x3...
     std::vector<std::pair<power, coeff>> inputSized2; //polynomial of [size2] terms of form  3+6x+9x^2+12^x3...
 
-    int size1 = 50000;
-    int size2 = 50000;
+    int size1 = 10000;
+    int size2 = 10000;
 
     for(int i = 0; i< size1; i++){
         inputSized1.push_back(std::make_pair(i,i+1));
     }
     for(int i = 0; i< size2; i++){
-        inputSized1.push_back(std::make_pair(i,3*(i+1)));
+        inputSized2.push_back(std::make_pair(i,3*(i+1)));
     }
 
     polynomial p1(input1.begin(), input1.end());
@@ -77,9 +78,12 @@ int main()
     polynomial ps1(inputSized1.begin(), inputSized1.end());
     polynomial ps2(inputSized2.begin(), inputSized2.end());
 
+     unsigned int num_threads = std::thread::hardware_concurrency();
+     std::cout << "Threads Avalible: " << num_threads << "\n";
+
     // //TEST SUMS:
     // //===================================================
-     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();//start clock to time adding 2 polys
+    /* std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();//start clock to time adding 2 polys
      polynomial sum1 = ps1 + ps2;
      std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock
      auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
@@ -91,30 +95,90 @@ int main()
      duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
      std::cout << "SUM 1 CANONIZATION TIME: " << duration.count() << " ms\n";
 
-     sum1.print();
+     //sum1.print();
 
      begin = std::chrono::steady_clock::now();//start clock to time adding   
      polynomial sum2 = ps1 + (int)5;
      end = std::chrono::steady_clock::now(); //end clock
-
      duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-     std::cout << "SUM 2 TIME: " << duration.count() << " ms\n";
-     std::cout << "SUM 2: \n";
-     sum2.print();
+     std::cout << "SUM 2 COMPUTIATION TIME: " << duration.count() << " ms\n";
+
+     begin = std::chrono::steady_clock::now();//start clock to time 
+     holdCanVec = sum2.canonical_form();
+     end = std::chrono::steady_clock::now(); //end clock
+     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+     std::cout << "SUM 2 CANONIZATION TIME: " << duration.count() << " ms\n";
+     //sum2.print();
 
      begin = std::chrono::steady_clock::now();//start clock to time adding   
      polynomial sum3 = (int)6 + ps1;
      end = std::chrono::steady_clock::now(); //end clock
-
      duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-     std::cout << "SUM 3 TIME: " << duration.count() << " ms\n";
-     std::cout << "SUM 3: \n";
+     std::cout << "SUM 3 COMPUTIATION TIME: " << duration.count() << " ms\n";
+
+     begin = std::chrono::steady_clock::now();//start clock to time 
+     holdCanVec = sum3.canonical_form();
+     end = std::chrono::steady_clock::now(); //end clock
+     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+     std::cout << "SUM 3 CANONIZATION TIME: " << duration.count() << " ms\n";*/
      //sum3.print();
      
-     //relative timing fine
+     //non threaded timing fine i hope
 
     // //TEST MULTIPLY:
     // //===================================================
+
+     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();//start clock to time adding 2 polys
+     polynomial mul1 = ps1 * ps2;
+     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock
+     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+     std::cout << "MUL 1 COMPUTIATION TIME: " << duration.count() << " ms\n";
+     // std::cout << "mul1 vector no canonization :\n";
+     //mul1.print();
+
+     begin = std::chrono::steady_clock::now();//start clock to time 
+     std::vector<std::pair<power, coeff>> holdCanVec = mul1.canonical_form();
+     end = std::chrono::steady_clock::now(); //end clock
+     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+     std::cout << "MUL 1 CANONIZATION TIME: " << duration.count() << " ms\n";
+
+     
+     /*std::cout << "ps1 vector :\n";
+     ps1.print();
+          std::cout << "ps2 vector :\n";
+     ps2.print();
+      std::cout << "mul1 vector :\n";
+     mul1.print();*/
+    /*
+     begin = std::chrono::steady_clock::now();//start clock to time adding   
+     polynomial mul2 = ps1 * (int)5;
+     end = std::chrono::steady_clock::now(); //end clock
+     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+     std::cout << "MUL 2 COMPUTIATION TIME: " << duration.count() << " ms\n";
+
+     begin = std::chrono::steady_clock::now();//start clock to time 
+     holdCanVec = mul2.canonical_form();
+     end = std::chrono::steady_clock::now(); //end clock
+     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+     std::cout << "MUL 2 CANONIZATION TIME: " << duration.count() << " ms\n";
+     //mul2.print();
+
+     begin = std::chrono::steady_clock::now();//start clock to time adding   
+     polynomial mul3 = (int)6 * ps1;
+     end = std::chrono::steady_clock::now(); //end clock
+     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+     std::cout << "MUL 3 COMPUTIATION TIME: " << duration.count() << " ms\n";
+
+     begin = std::chrono::steady_clock::now();//start clock to time 
+     holdCanVec = mul3.canonical_form();
+     end = std::chrono::steady_clock::now(); //end clock
+     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+     std::cout << "MUL 3 CANONIZATION TIME: " << duration.count() << " ms\n";
+     //mul3.print();
+    */
+     //mul is pretty slow, but it is inherent without FFT that it is O(n^2)
+
+
     // polynomial mul1 = p1 * p2;
     // std::cout << "MUL 1: \n";
     // mul1.print();
@@ -129,25 +193,31 @@ int main()
 
     //TEST MODULUS:
     //===================================================
-    //polynomial mod1 = p1 % p2;
-    //std::cout << "MOD 1: \n";
-    //mod1.print();
+     /*std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();//start clock to time adding 2 polys
+     polynomial mod1 = p1 % p2;
+     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock
+     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+     std::cout << "MOD 1 COMPUTIATION TIME: " << duration.count() << " ms\n";
 
-    // polynomial mod2 = p1 % 2;
-    // std::cout << "MOD 2: \n";
-    // mod2.print();
+     begin = std::chrono::steady_clock::now();//start clock to time 
+     std::vector<std::pair<power, coeff>> holdCanVec = mod1.canonical_form();
+     end = std::chrono::steady_clock::now(); //end clock
+     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+     std::cout << "MOD 1 CANONIZATION TIME: " << duration.count() << " ms\n";
 
-    //polynomial mod3 = p1 % p1;
-    //std::cout << "MOD 3: \n";
-    //mod3.print();
+     begin = std::chrono::steady_clock::now();//start clock to time adding 2 polys
+     polynomial mod2 = p3 % p1;
+     end = std::chrono::steady_clock::now(); //end clock
+     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+     std::cout << "MOD 2 COMPUTIATION TIME: " << duration.count() << " ms\n";
 
-    //polynomial mod4 = p3 % p1;
-    //std::cout << "MOD 4: \n";
-    //mod4.print();
-
-    // polynomial mod5 = p3 % p1;
-    // std::cout << "MOD 5: \n";
-    // mod5.print();
+     begin = std::chrono::steady_clock::now();//start clock to time 
+     holdCanVec = mod2.canonical_form();
+     end = std::chrono::steady_clock::now(); //end clock
+     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+     std::cout << "MOD 2 CANONIZATION TIME: " << duration.count() << " ms\n";
+*/
+    
 
 
 

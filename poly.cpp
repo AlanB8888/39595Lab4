@@ -1,5 +1,8 @@
 #include "poly.h"
 #include <iostream>
+#include <thread>
+#include <algorithm>
+#include <queue>
 
 polynomial::polynomial(){
     polyVec.push_back(std::make_pair(0, 0)); //construct with 0 coeff 0 power only
@@ -87,6 +90,14 @@ std::vector<std::pair<power, coeff>> polynomial::getPolyVec() const{
     //2. remove 0 coeff pairs other than (0,0)
     //3. order from highest to lowest power
     //4 determine wether to have the (0,0) pair
+/*void sortForThreads(const std::vector<std::pair<power, coeff>> &chunk, std::vector<std::pair<power, coeff>> &threadSorts){
+    //split ordvec into even chunks to sort, then merge
+    std::vector<std::pair<power, coeff>> chunkSort = chunk;
+    std::sort(chunkSort.begin(), chunkSort.end(), [](const std::pair<power, coeff> &a, const std::pair<power, coeff> &b) {
+        return a.first > b.first;  // 
+    });
+    threadSorts = chunkSort;
+}*/
 
 std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
     //way too slow!
@@ -99,15 +110,84 @@ std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
         return ordVec;
     }
 
-    ordVec = polyVec;
-    //start by sorting the polyvec by power
-    //order by power now
-    std::sort(ordVec.begin(), ordVec.end(), [](const std::pair<power, coeff> &a, const std::pair<power, coeff> &b) {
-        return a.first > b.first;  // sort by power, lergest at index 0
-    });
+    
+    //thread attempt...
+    /*unsigned int num_threads = std::min(static_cast<size_t>(std::thread::hardware_concurrency()), polyVec.size());//128 on my machine
+    long range = polyVec.size()/num_threads;
+    std::vector<std::vector<std::pair<power, coeff>>> threadSorts(num_threads); //vector of smaller sorted vector
+    std::vector<std::thread> threads; //init threds vec  
 
+
+    for (int i = 0; i < num_threads; i++) {
+        long start = i * range;               
+        long end = (i == num_threads - 1) ? polyVec.size() : (i + 1) * range;
+        //std::cout << "i: " << i << "\n"; 
+        //std::cout << "start: " << start << "\n"; 
+        //std::cout << "end: " << end << "\n";
+        std::vector<std::pair<power, coeff>> chunkVec((polyVec.begin() + start), (polyVec.begin() + end));  
+        //polynomial printPoly3(chunkVec.begin(),chunkVec.end());
+        //printPoly3.print();
+        threads.push_back(std::thread(sortForThreads, chunkVec, std::ref(threadSorts[i])));
+    }
+
+    for (auto &t : threads) {
+        t.join();                        
+    }//wait for threads to sort their chunks
+
+    //simple merge for checking above code
+    /*for(std::vector<std::pair<power, coeff>> chunk : threadSorts){
+        ordVec.insert(ordVec.end(), chunk.begin(), chunk.end());
+    }
+    std::sort(ordVec.begin(), ordVec.end(), [](const std::pair<power, coeff> &a, const std::pair<power, coeff> &b) {
+        return a.first > b.first;  // 
+    });*/
+
+    //split ordvec into even chunks to sort, then merge
+    //to merge these efficiently a priority queue is needed
+    //pq needs functor
+/*
+    class ComparePower {
+    public:
+        bool operator()(const std::pair<power, coeff>& a, const std::pair<power, coeff>& b) const {
+            return a.first < b.first;  // Compare powers in descending order
+        }
+    };
+    std::priority_queue<std::pair<power, coeff>, std::vector<std::pair<power, coeff>>, ComparePower> pq;
+
+
+    std::vector<int> chunkPos(num_threads,0);
+    for(const std::vector<std::pair<power, coeff>>& chunk: threadSorts){
+        if(!chunk.empty()){
+            pq.push(*chunk.begin());
+        }
+    }
+
+    while(!pq.empty()){
+        std::pair<power, coeff> currPush = pq.top();
+        pq.pop();
+        ordVec.push_back(currPush);
+        int i = -1;
+        for(std::vector<std::pair<power, coeff>>& chunk : threadSorts){
+            i++;
+            if((*(chunk.begin() + chunkPos.at(i))) == currPush ){
+                chunkPos[i] = chunkPos[i] +1;
+                if((chunk.begin() +chunkPos.at(i)) != chunk.end()){
+                    pq.push((*(chunk.begin()+chunkPos.at(i))));  // Push the next element from that chunk
+                }
+                break;
+            }
+        }
+    }
+    polynomial printPoly3(ordVec.begin(),ordVec.end());
+    printPoly3.print();*/
+    //end thread attempt...
+    ordVec = polyVec;
+    std::sort(ordVec.begin(), ordVec.end(), [](const std::pair<power, coeff> &a, const std::pair<power, coeff> &b) {
+        return a.first > b.first;  // 
+    });
     //ord vec is sorted by power now
 
+    //following code is O(n)
     std::vector<std::pair<power, coeff>>::iterator ordIt = ordVec.begin();
     std::vector<std::pair<power, coeff>>::iterator ordItNext = ordIt;
     std::vector<std::pair<power, coeff>>::iterator ordEnd = ordVec.end();
@@ -146,39 +226,7 @@ std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
         canVec.push_back(std::make_pair(0, 0));
     }
     return canVec;
-    /*
-    for(std::pair<power, coeff> term : polyVec){
-        bool found = false; //term  like power not found in ordVec yet
-        for(std::pair<power, coeff>  &termO : ordVec){
-            if(term.first == termO.first){ //found a like term
-                termO.second += term.second;
-                found = true;
-                break; //only want to add once in case of multiple of same term pairs in vec     
-            }
-        }  
 
-        if(!found){
-            ordVec.push_back(term); //did not find a like term, add it as new pair
-        }
-    }
-    //canVec should have all like terms combined, unordered by power
-    //order by power now
-    std::sort(ordVec.begin(), ordVec.end(), [](const std::pair<power, coeff> &a, const std::pair<power, coeff> &b) {
-        return a.first > b.first;  // sort by power, lergest at index 0
-    });
-    //now get rid of all 0 coeff terms
-    //just only add elem to canVec with no 0 coeff
-
-    for (std::pair<power, coeff> termNZ : ordVec){
-        if(termNZ.second != 0){
-           canVec.push_back(termNZ); //found non zero coeff term, add it
-        }
-    }
-    if (canVec.empty()){ //if empty say its 0,0
-        canVec.push_back(std::make_pair(0, 0));
-    }
-    return canVec;
-    */
 }
 
 bool polynomial::operator>=(const polynomial &other)
@@ -203,30 +251,11 @@ polynomial operator+(const polynomial &lhs, const polynomial &rhs) {
 
 
     //just add them, by joinng vecs, canonize/simplify somewhere else
-
+    //O(n) pretty sure
 
     std::vector<std::pair<power, coeff>> sumVec = lhs.getPolyVec();
     std::vector<std::pair<power, coeff>> addVec = rhs.getPolyVec();
     sumVec.insert(sumVec.end(), addVec.begin(), addVec.end());//gg
-    
-    //if like powers, combine coefficients and update vector, if new power add to vector
-    //combineing coeffs could be done in canonical form funct but it might be good to do here
-
-    //vector is not ordered so need to iterate through and find (maybe sort could help for speed later)
-    /*for(std::pair<power, coeff>  termR : rhs.getPolyVec()){//all pairs as term in this are copys            
-    bool found = false; //termR  like power not found in sumVec yet
-        for(std::pair<power, coeff>  &termS : sumVec){
-            if(termR.first == termS.first){ //found a like term
-                termS.second += termR.second;
-                found = true;
-                break; //only want to add once in case of multiple of same term pairs in vec     
-            }
-        }  
-
-        if(!found){
-            sumVec.push_back(termR); //did not find a like term, add it as new pair
-        }
-    }*/
 
     
     polynomial result(sumVec.begin(), sumVec.end());
@@ -240,26 +269,88 @@ std::pair<power, coeff> multiply2terms(std::pair<power, coeff> t1, std::pair<pow
     return {t1.first + t2.first, t1.second * t2.second};
 }
 
+void sectionMultiplier(const std::vector<std::pair<power, coeff>> &lhs, const std::vector<std::pair<power, coeff>> &rhs, std::vector<std::pair<power, coeff>> &threadAnswers){
+    std::vector<std::pair<power, coeff>> answer;
+    for(std::pair<power, coeff> pairL : lhs)
+    {
+        for(std::pair<power, coeff> pairR : rhs)
+        {
+
+            std::pair<power, coeff> product = multiply2terms(pairL, pairR);
+            answer.push_back(product);
+        }
+
+    }
+    threadAnswers = answer;
+}
+
+
 polynomial operator*(const polynomial &lhs, const polynomial &rhs) 
 {
     // size_t degree = lhs.find_degree_of() + rhs.find_degree_of();
-    polynomial answer;
     std::vector<std::pair<power, coeff>> lhsPoly = lhs.getPolyVec();
     std::vector<std::pair<power, coeff>> rhsPoly = rhs.getPolyVec();
 
     //TODO: make this multithreaded
-    //Multiply each term with each other term in the other polynomial and sum everything
-    for(std::pair<power, coeff> pairL : lhsPoly)
-    {
-        for(std::pair<power, coeff> pairR : rhsPoly)
-        {
-            polynomial product = multiply2terms(pairL, pairR);
-            answer = answer + product; //TODO: check if this causes errors IDK if default constructor works here
-        }
+    /*polynomial printPoly1(lhsPoly.begin(),lhsPoly.end());
+    printPoly1.print();
+    polynomial printPoly2(rhsPoly.begin(),rhsPoly.end());
+    printPoly2.print();*/
 
+    //Multiply each term with each other term in the other polynomial and sum everything
+    //this is the O(n^2) method, may want to use O(nlogn) FFT method... only if necessary it is pretty wierd
+
+    //with O(n^2) method, threads can be used to devide lhs by an amount of threads here
+
+    //vector of all the vecotrs determined by the threads
+
+
+    bool threadLeft = lhsPoly.size() >= rhsPoly.size();
+    //std::cout << "bool threadLeft mul1: " << threadLeft << "\n";
+
+    long bigPolySize = (threadLeft)? lhsPoly.size() : rhsPoly.size();
+
+    unsigned int num_threads = std::min(static_cast<long>(std::thread::hardware_concurrency()), bigPolySize);//128 on my machine
+    //std::cout << "num_threads mul1: " << num_threads << "\n";
+
+    long range = bigPolySize/num_threads;
+    //std::cout << "range mul1: " << range << "\n";                     
+    std::vector<std::vector<std::pair<power, coeff>>> threadAnswers(num_threads); 
+    std::vector<std::thread> threads; //init threds vec    
+    std::vector<std::pair<power, coeff>> othVec = (threadLeft)? rhsPoly : lhsPoly;
+
+    //polynomial printPoly(othVec.begin(),othVec.end());
+    //printPoly.print();
+
+    for (int i = 0; i < num_threads; i++) {
+        long start = i * range;               
+        long end = (i == num_threads - 1) ? bigPolySize : (i + 1) * range;
+        //std::cout << "i: " << i << "\n"; 
+        //std::cout << "start: " << start << "\n"; 
+        //std::cout << "end: " << end << "\n";  
+        std::vector<std::pair<power, coeff>> divVec;
+        if (threadLeft) {
+            divVec.assign(lhsPoly.begin() + start, lhsPoly.begin() + end);  // Slice lhsPoly
+        } else {
+            divVec.assign(rhsPoly.begin() + start, rhsPoly.begin() + end);  // Slice rhsPoly
+        }
+        //polynomial printPoly3(divVec.begin(),divVec.end());
+        //printPoly3.print();
+        threads.push_back(std::thread(sectionMultiplier, divVec, othVec, std::ref(threadAnswers[i])));
     }
 
-    return answer;
+
+    for (auto &t : threads) {
+        t.join();                        
+    }//wait for thread answers to be full
+
+    std::vector<std::pair<power, coeff>> totVec; //will hold the final product
+    for(std::vector<std::pair<power, coeff>> ans : threadAnswers){
+        totVec.insert(totVec.end(), ans.begin(), ans.end());
+    }
+
+    polynomial result(totVec.begin(), totVec.end());
+    return result;
 
 }
 
