@@ -60,8 +60,8 @@ int main()
     std::vector<std::pair<power, coeff>> inputSized1; //polynomial of [size1] terms of form  1+2x+3x^2+4^x3...
     std::vector<std::pair<power, coeff>> inputSized2; //polynomial of [size2] terms of form  3+6x+9x^2+12^x3...
 
-    int size1 = 500000;
-    int size2 = 500000;
+    int size1 = 50000;
+    int size2 = 50000;
 
     for(int i = 0; i< size1; i++){
         inputSized1.push_back(std::make_pair(i,i+1));
@@ -83,8 +83,14 @@ int main()
      polynomial sum1 = ps1 + ps2;
      std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock
      auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-     std::cout << "SUM 1 TIME: " << duration.count() << " ms\n";
-     std::cout << "SUM 1: \n";
+     std::cout << "SUM 1 COMPUTIATION TIME: " << duration.count() << " ms\n";
+
+     begin = std::chrono::steady_clock::now();//start clock to time 
+     std::vector<std::pair<power, coeff>> holdCanVec = sum1.canonical_form();
+     end = std::chrono::steady_clock::now(); //end clock
+     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+     std::cout << "SUM 1 CANONIZATION TIME: " << duration.count() << " ms\n";
+
      //sum1.print();
 
      begin = std::chrono::steady_clock::now();//start clock to time adding   

@@ -89,7 +89,7 @@ std::vector<std::pair<power, coeff>> polynomial::getPolyVec() const{
     //4 determine wether to have the (0,0) pair
 
 std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
-
+    //way too slow!
 
     std::vector<std::pair<power, coeff>> ordVec;
     std::vector<std::pair<power, coeff>> canVec;
