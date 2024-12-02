@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <queue>
 
+
 polynomial::polynomial(){
     polyVec.push_back(std::make_pair(0, 0)); //construct with 0 coeff 0 power only
 
@@ -35,7 +36,8 @@ polynomial::polynomial(std::pair<power, coeff> pair)
 
 void polynomial::print()
 {
-    std::vector<std::pair<power, coeff>> poly = this->canonical_form();
+    //std::vector<std::pair<power, coeff>> poly = this->canonical_form();
+    std::vector<std::pair<power, coeff>> poly = polyVec;
     std::vector<std::pair<power, coeff>>::iterator start = poly.begin();
     std::vector<std::pair<power, coeff>>::iterator end = poly.end();
     
@@ -90,18 +92,92 @@ std::vector<std::pair<power, coeff>> polynomial::getPolyVec() const{
     //2. remove 0 coeff pairs other than (0,0)
     //3. order from highest to lowest power
     //4 determine wether to have the (0,0) pair
-/*void sortForThreads(const std::vector<std::pair<power, coeff>> &chunk, std::vector<std::pair<power, coeff>> &threadSorts){
+/*std::vector<std::pair<power, coeff>> mergeSortedChunks(const std::vector<std::vector<std::pair<power, coeff>>> &threadSorts) {
+    // Min-Heap for k-way merge
+    using HeapElement = std::tuple<power, coeff, size_t, size_t>; // {value, coeff, vector_index, element_index}
+    auto compare = [](const HeapElement &a, const HeapElement &b) {
+        return std::get<0>(a) < std::get<0>(b); // Max-Heap for descending order
+    };
+    std::priority_queue<HeapElement, std::vector<HeapElement>, decltype(compare)> heap(compare);
+
+    // Initialize the heap with the first element from each vector
+    for (size_t i = 0; i < threadSorts.size(); ++i) {
+        if (!threadSorts[i].empty()) {
+            heap.emplace(threadSorts[i][0].first, threadSorts[i][0].second, i, 0);
+        }
+    }
+
+    std::vector<std::pair<power, coeff>> result;
+
+    // Perform the k-way merge
+    while (!heap.empty()) {
+        auto [value, coeff, vectorIndex, elementIndex] = heap.top();
+        heap.pop();
+        result.emplace_back(value, coeff);
+
+        // Push the next element from the same vector into the heap
+        if (elementIndex + 1 < threadSorts[vectorIndex].size()) {
+            heap.emplace(threadSorts[vectorIndex][elementIndex + 1].first,
+                         threadSorts[vectorIndex][elementIndex + 1].second,
+                         vectorIndex,
+                         elementIndex + 1);
+        }
+    }
+
+    return result;
+}*/
+void mergeForThreads(const std::vector<std::pair<power, coeff>> &chunk0,const std::vector<std::pair<power, coeff>> &chunk1, std::vector<std::pair<power, coeff>> &threadSortsR){
+    //split ordvec into even chunks to sort, then merge
+    std::vector<std::pair<power, coeff>> result;
+    std::merge(chunk0.begin(), chunk0.end(), chunk1.begin(), chunk1.end(),
+               std::back_inserter(result),
+               [](const std::pair<power, coeff>& a, const std::pair<power, coeff>& b) {
+                   return a.first > b.first;  
+               });
+    threadSortsR = result;
+}
+
+std::vector<std::vector<std::pair<power, coeff>>> parMergeChunks(const std::vector<std::vector<std::pair<power, coeff>>> &threadSorts) {
+    int numSortedVec = threadSorts.size();
+    int numThreads = (numSortedVec+1) / 2; //if 128 sorted vec, make 64 threads to merge 2 in paralell
+    //std::cout << "numthreads par canon: " << numThreads << "\n";
+
+    std::vector<std::vector<std::pair<power, coeff>>> threadSortsR(numThreads); //vector of merged vectors
+    std::vector<std::thread> threads; //init threds vec  
+    //if(numThreads == 1){
+    //        polynomial printPoly3(threadSorts[1].begin(),threadSorts[1].end());
+    //        printPoly3.print();
+    //}
+    for (int i = 0; i < numThreads*2; i=i+2) {
+        threads.push_back(std::thread(mergeForThreads, threadSorts[i],threadSorts[i+1], std::ref(threadSortsR[i/2])));
+    }
+    for (auto &t : threads) {
+        t.join();                        
+    }//wait for threads to sort their chunks
+    return threadSortsR;
+}
+
+void sortForThreads(const std::vector<std::pair<power, coeff>> &chunk, std::vector<std::pair<power, coeff>> &threadSorts){
     //split ordvec into even chunks to sort, then merge
     std::vector<std::pair<power, coeff>> chunkSort = chunk;
     std::sort(chunkSort.begin(), chunkSort.end(), [](const std::pair<power, coeff> &a, const std::pair<power, coeff> &b) {
         return a.first > b.first;  // 
     });
     threadSorts = chunkSort;
-}*/
-
+}
+unsigned int uIntPowTwo(unsigned int x) {
+    if (x <= 0) return 0;
+    x--;  
+    x |= x >> 1;  
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;  
+    return x + 1;  
+}
 std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
     //way too slow!
-
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();//start clock to time the sorting of the divided vecs
     std::vector<std::pair<power, coeff>> ordVec;
     std::vector<std::pair<power, coeff>> canVec;
     
@@ -112,8 +188,13 @@ std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
 
     
     //thread attempt...
-    /*unsigned int num_threads = std::min(static_cast<size_t>(std::thread::hardware_concurrency()), polyVec.size());//128 on my machine
+    unsigned int num_threadsOdd = std::min(static_cast<size_t>(std::thread::hardware_concurrency()), polyVec.size());//128 on my machine
+    
+    unsigned int num_threads = uIntPowTwo(num_threadsOdd);
+    //std::cout << "num threads canon: " << num_threads << "\n";
     long range = polyVec.size()/num_threads;
+    //std::cout << "polyVec size canon: " << polyVec.size() << "\n";
+    //std::cout << "range canon: " << range << "\n";
     std::vector<std::vector<std::pair<power, coeff>>> threadSorts(num_threads); //vector of smaller sorted vector
     std::vector<std::thread> threads; //init threds vec  
 
@@ -124,9 +205,11 @@ std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
         //std::cout << "i: " << i << "\n"; 
         //std::cout << "start: " << start << "\n"; 
         //std::cout << "end: " << end << "\n";
-        std::vector<std::pair<power, coeff>> chunkVec((polyVec.begin() + start), (polyVec.begin() + end));  
-        //polynomial printPoly3(chunkVec.begin(),chunkVec.end());
-        //printPoly3.print();
+        std::vector<std::pair<power, coeff>> chunkVec((polyVec.begin() + start), (polyVec.begin() + end)); 
+        //if(i == 127){
+        //    polynomial printPoly3(chunkVec.begin(),chunkVec.end());
+        //    printPoly3.print();
+        //}
         threads.push_back(std::thread(sortForThreads, chunkVec, std::ref(threadSorts[i])));
     }
 
@@ -134,60 +217,52 @@ std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
         t.join();                        
     }//wait for threads to sort their chunks
 
-    //simple merge for checking above code
-    /*for(std::vector<std::pair<power, coeff>> chunk : threadSorts){
-        ordVec.insert(ordVec.end(), chunk.begin(), chunk.end());
-    }
-    std::sort(ordVec.begin(), ordVec.end(), [](const std::pair<power, coeff> &a, const std::pair<power, coeff> &b) {
-        return a.first > b.first;  // 
-    });*/
+           // polynomial printPoly3(threadSorts[0].begin(),threadSorts[0].end());
+           // printPoly3.print();
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock chunkc are all sorted
 
-    //split ordvec into even chunks to sort, then merge
-    //to merge these efficiently a priority queue is needed
-    //pq needs functor
-/*
-    class ComparePower {
-    public:
-        bool operator()(const std::pair<power, coeff>& a, const std::pair<power, coeff>& b) const {
-            return a.first < b.first;  // Compare powers in descending order
-        }
-    };
-    std::priority_queue<std::pair<power, coeff>, std::vector<std::pair<power, coeff>>, ComparePower> pq;
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    std::cout << "sorting for divided time: " << duration.count() << " ms\n";
 
 
-    std::vector<int> chunkPos(num_threads,0);
-    for(const std::vector<std::pair<power, coeff>>& chunk: threadSorts){
-        if(!chunk.empty()){
-            pq.push(*chunk.begin());
-        }
+
+
+    std::vector<std::vector<std::pair<power, coeff>>> workingOnMerge;
+    begin = std::chrono::steady_clock::now();//start clock to time the merging proces
+
+    workingOnMerge = threadSorts;
+    //std::cout << "working on merge size canon: " << workingOnMerge.size() << "\n";
+    int workingSize = threadSorts.size(); //always a power of 2
+    //std::cout << "working size canon: " << workingSize << "\n";
+    while(workingSize != 1){
+        workingOnMerge = parMergeChunks(workingOnMerge);
+
+        workingSize = workingOnMerge.size();
+        //std::cout << "working size canon: " << workingSize << "\n";
     }
 
-    while(!pq.empty()){
-        std::pair<power, coeff> currPush = pq.top();
-        pq.pop();
-        ordVec.push_back(currPush);
-        int i = -1;
-        for(std::vector<std::pair<power, coeff>>& chunk : threadSorts){
-            i++;
-            if((*(chunk.begin() + chunkPos.at(i))) == currPush ){
-                chunkPos[i] = chunkPos[i] +1;
-                if((chunk.begin() +chunkPos.at(i)) != chunk.end()){
-                    pq.push((*(chunk.begin()+chunkPos.at(i))));  // Push the next element from that chunk
-                }
-                break;
-            }
-        }
-    }
-    polynomial printPoly3(ordVec.begin(),ordVec.end());
-    printPoly3.print();*/
-    //end thread attempt...
-    ordVec = polyVec;
-    std::sort(ordVec.begin(), ordVec.end(), [](const std::pair<power, coeff> &a, const std::pair<power, coeff> &b) {
-        return a.first > b.first;  // 
-    });
-    //ord vec is sorted by power now
 
-    //following code is O(n)
+
+     ordVec = workingOnMerge[0];  // Start with the first sorted chunk
+
+
+        //polynomial printPoly8(ordVec.begin(),ordVec.end());
+        //printPoly8.print();
+    /*for (size_t i = 1; i < workingOnMerge.size(); ++i) {
+        std::vector<std::pair<power, coeff>> temp;
+        // Merge the current merged vector with the next chunk
+        std::merge(ordVec.begin(), ordVec.end(),
+                   workingOnMerge[i].begin(), workingOnMerge[i].end(),
+                   std::back_inserter(temp));
+        ordVec = temp;  // Update mergedVec to the newly merged result
+    }*/
+
+     end = std::chrono::steady_clock::now(); //end clock chunkc are all sorted
+
+     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    std::cout << "mergeing time: " << duration.count() << " ms\n";
+
+    //following code is O(n), combines like terms
     std::vector<std::pair<power, coeff>>::iterator ordIt = ordVec.begin();
     std::vector<std::pair<power, coeff>>::iterator ordItNext = ordIt;
     std::vector<std::pair<power, coeff>>::iterator ordEnd = ordVec.end();

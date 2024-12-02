@@ -6,7 +6,7 @@
 
 #include "poly.h"
 
-std::optional<double> poly_test(polynomial& p1,
+/*std::optional<double> poly_test(polynomial& p1,
                                 polynomial& p2,
                                 std::vector<std::pair<power, coeff>> solution)
 
@@ -27,7 +27,7 @@ std::optional<double> poly_test(polynomial& p1,
     }
 
     return std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
-}
+}*/
 
 int main()
 {
@@ -60,9 +60,8 @@ int main()
 
     std::vector<std::pair<power, coeff>> inputSized1; //polynomial of [size1] terms of form  1+2x+3x^2+4^x3...
     std::vector<std::pair<power, coeff>> inputSized2; //polynomial of [size2] terms of form  3+6x+9x^2+12^x3...
-
-    int size1 = 10000;
-    int size2 = 10000;
+    int size1 = 3;
+    int size2 = 3;
 
     for(int i = 0; i< size1; i++){
         inputSized1.push_back(std::make_pair(i,i+1));
@@ -143,14 +142,15 @@ int main()
      std::cout << "MUL 1 CANONIZATION TIME: " << duration.count() << " ms\n";
 
      
-     /*std::cout << "ps1 vector :\n";
+     std::cout << "ps1 vector :\n";
      ps1.print();
           std::cout << "ps2 vector :\n";
      ps2.print();
       std::cout << "mul1 vector :\n";
-     mul1.print();*/
-    /*
-     begin = std::chrono::steady_clock::now();//start clock to time adding   
+        polynomial cans1(holdCanVec.begin(), holdCanVec.end());
+     cans1.print();
+    
+     /*begin = std::chrono::steady_clock::now();//start clock to time adding   
      polynomial mul2 = ps1 * (int)5;
      end = std::chrono::steady_clock::now(); //end clock
      duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
@@ -161,21 +161,24 @@ int main()
      end = std::chrono::steady_clock::now(); //end clock
      duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
      std::cout << "MUL 2 CANONIZATION TIME: " << duration.count() << " ms\n";
-     //mul2.print();
+     //mul2.print(); */
 
-     begin = std::chrono::steady_clock::now();//start clock to time adding   
+     /*std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();//start clock to time adding   
      polynomial mul3 = (int)6 * ps1;
-     end = std::chrono::steady_clock::now(); //end clock
-     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock
+     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
      std::cout << "MUL 3 COMPUTIATION TIME: " << duration.count() << " ms\n";
-
+        mul3.print();
      begin = std::chrono::steady_clock::now();//start clock to time 
-     holdCanVec = mul3.canonical_form();
+     std::vector<std::pair<power, coeff>> holdCanVec = mul3.canonical_form();
      end = std::chrono::steady_clock::now(); //end clock
      duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
      std::cout << "MUL 3 CANONIZATION TIME: " << duration.count() << " ms\n";
      //mul3.print();
-    */
+     std::cout << "mul3 vector :\n";
+     polynomial cans1(holdCanVec.begin(), holdCanVec.end());
+     cans1.print();*/
+    
      //mul is pretty slow, but it is inherent without FFT that it is O(n^2)
 
 
