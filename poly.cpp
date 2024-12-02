@@ -13,7 +13,17 @@ polynomial::polynomial(){
 template <typename Iter>
 polynomial::polynomial(Iter begin, Iter end) //constructor from iterators
 {
-    polyVec.insert(polyVec.end(), begin, end);
+    // polyVec.insert(polyVec.end(), begin, end);
+
+    while(begin != end)
+    {
+        if((*(begin)).second != 0) //dont add the zeros
+        {
+            polyVec.push_back(*(begin));
+        }
+
+        begin++;
+    }
 }
 
 polynomial::polynomial(const polynomial &other):polyVec(other.polyVec) //copy constructor
@@ -459,11 +469,13 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
 
     while(remainder >= denom)
     {
+        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
         // Divide the first term of the remainder by the first term of the denominator
         std::pair<power, coeff> divide = remainder.canonical_form()[0] / leading;
 
         if(divide.second == 0)
         {
+            std::cout << "GOT HERE" << '\n';
             break;
         }
 
@@ -472,6 +484,10 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
 
         // Subtract the result from the remainder
         remainder = remainder + (-1 * curr);
+        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+
+        std::cout << duration.count() << '\n';
 
     }
 
