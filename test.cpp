@@ -60,8 +60,8 @@ int main()
 
     std::vector<std::pair<power, coeff>> inputSized1; //polynomial of [size1] terms of form  1+2x+3x^2+4^x3...
     std::vector<std::pair<power, coeff>> inputSized2; //polynomial of [size2] terms of form  3+6x+9x^2+12^x3...
-    int size1 = 10000;
-    int size2 = 10000;
+    int size1 = 3;
+    int size2 = 4;
 
     for(int i = 0; i< size1; i++){
         inputSized1.push_back(std::make_pair(i,i+1));
@@ -150,13 +150,13 @@ int main()
       std::cout << "MUL 1 CANONIZATION TIME: " << duration.count() << " ms\n";
 
      
-      /*std::cout << "ps1 vector :\n";
+      std::cout << "ps1 vector :\n";
       ps1.print();
            std::cout << "ps2 vector :\n";
       ps2.print();
        std::cout << "mul1 vector :\n";
          polynomial cans1(holdCanVec.begin(), holdCanVec.end());
-      cans1.print();*/
+      cans1.print();
     
      /*begin = std::chrono::steady_clock::now();//start clock to time adding   
      polynomial mul2 = ps1 * (int)5;

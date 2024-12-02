@@ -414,8 +414,9 @@ void sectionMultiplier(const std::vector<std::pair<power, coeff>> &lhs, const st
 
             threadAnswers.push_back(multiply2terms(pairL, pairR));
         }
-        //threadAnswers = vectorCanon(threadAnswers);
+        
     }
+    threadAnswers = vectorCanon(threadAnswers);
 
 }
 
