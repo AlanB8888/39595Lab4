@@ -32,6 +32,11 @@ polynomial::polynomial(std::pair<power, coeff> pair)
     this->polyVec = poly;
 }
 
+polynomial::polynomial(std::vector<std::pair<power, coeff>> vec)
+{
+    this->polyVec = vec;
+}
+
 
 
 void polynomial::print()
@@ -335,7 +340,7 @@ polynomial operator+(const polynomial &lhs, const polynomial &rhs) {
     
     polynomial result(sumVec.begin(), sumVec.end());
 
-    return result;
+    return (result.canonical_form());
 
 }
 
@@ -357,6 +362,11 @@ void sectionMultiplier(const std::vector<std::pair<power, coeff>> &lhs, const st
 
     }
     threadAnswers = answer;
+}
+
+polynomial operator*(const std::pair<power, coeff>& pair, const polynomial& poly) {
+    // This will invoke the constructor that converts the pair to a polynomial
+    return polynomial(pair) * poly;
 }
 
 
@@ -442,6 +452,7 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
     std::vector<std::pair<power, coeff>> v2 = denom.canonical_form();
 
     polynomial remainder = numer;
+
 
     while(remainder >= denom)
     {

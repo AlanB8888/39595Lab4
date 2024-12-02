@@ -50,6 +50,9 @@ public:
     //USER DEFINED TO CONVERT AN std::pair<power, coeff> TO POLYNOMIAL
     polynomial(std::pair<power, coeff> pair); //copy from integer 
 
+    //user added for copy
+    polynomial(std::vector<std::pair<power, coeff>> vec);
+
     /**
      * @brief Prints the polynomial.
      *
@@ -130,6 +133,7 @@ public:
 
     //user added for comparison
     bool operator>=(const polynomial &other);
+
 };
 
 
@@ -142,6 +146,10 @@ polynomial operator+(const polynomial &lhs, const polynomial &rhs);
 std::pair<power, coeff> operator/(const std::pair<power, coeff>& numer, const std::pair<power, coeff>& div);
 
 polynomial operator%(const polynomial &lhs, const polynomial &rhs);
+
+//polynomial operator*(const std::pair<power, coeff>& pair, const polynomial& poly);
+
+//void multiplyPolyByPair(polynomial& poly, std::pair<power, coeff>& pair);
 
 //allow this to called on vectors idk if nececarry actually
 //std::vector<std::pair<power, coeff>> canonizer(const std::vector<std::pair<power, coeff>> &tbc);
