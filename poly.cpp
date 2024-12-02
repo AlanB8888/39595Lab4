@@ -451,13 +451,13 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
     std::vector<std::pair<power, coeff>> v1 = numer.canonical_form();
     std::vector<std::pair<power, coeff>> v2 = denom.canonical_form();
 
-    polynomial remainder = numer;
+    polynomial remainder = numer.canonical_form();
 
 
     while(remainder >= denom)
     {
         // Divide the first term of the remainder by the first term of the denominator
-        std::pair<power, coeff> divide = remainder.canonical_form()[0] / v2[0];
+        std::pair<power, coeff> divide = remainder.getPolyVec()[0] / v2[0];
 
         if(divide.second == 0)
         {

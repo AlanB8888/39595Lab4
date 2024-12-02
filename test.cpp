@@ -219,6 +219,14 @@ int main()
      end = std::chrono::steady_clock::now(); //end clock
      duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
      std::cout << "MOD 2 CANONIZATION TIME: " << duration.count() << " ms\n";
+    std::cout << "MOD1: \n";
+    p1.print();
+    p2.print();
+    mod1.print();
+    std::cout << "MOD2: ";
+    p3.print();
+    p2.print();
+    mod2.print();
 
 
     //TEST MODULUS:
