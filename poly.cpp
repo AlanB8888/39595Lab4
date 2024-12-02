@@ -142,6 +142,7 @@ void mergeForThreads(const std::vector<std::pair<power, coeff>> &chunk0,const st
     threadSortsR = result;
 }
 
+
 std::vector<std::vector<std::pair<power, coeff>>> parMergeChunks(const std::vector<std::vector<std::pair<power, coeff>>> &threadSorts) {
     int numSortedVec = threadSorts.size();
     int numThreads = (numSortedVec+1) / 2; //if 128 sorted vec, make 64 threads to merge 2 in paralell
@@ -182,7 +183,7 @@ unsigned int uIntPowTwo(unsigned int x) {
 }
 std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
     //way too slow!
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();//start clock to time the sorting of the divided vecs
+    //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();//start clock to time the sorting of the divided vecs
     std::vector<std::pair<power, coeff>> ordVec;
     std::vector<std::pair<power, coeff>> canVec;
     
@@ -226,14 +227,14 @@ std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
            // printPoly3.print();
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock chunkc are all sorted
 
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    //auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
     //std::cout << "sorting for divided time: " << duration.count() << " ms\n";
 
 
 
 
     std::vector<std::vector<std::pair<power, coeff>>> workingOnMerge;
-    begin = std::chrono::steady_clock::now();//start clock to time the merging proces
+    //begin = std::chrono::steady_clock::now();//start clock to time the merging proces
 
     workingOnMerge = threadSorts;
     //std::cout << "working on merge size canon: " << workingOnMerge.size() << "\n";
@@ -264,7 +265,7 @@ std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
 
      end = std::chrono::steady_clock::now(); //end clock chunkc are all sorted
 
-     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+     //duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
     //std::cout << "mergeing time: " << duration.count() << " ms\n";
 
     //following code is O(n), combines like terms
@@ -448,8 +449,10 @@ std::pair<power, coeff> operator/(const std::pair<power, coeff>& numer, const st
 
 polynomial operator%(const polynomial &numer, const polynomial &denom)
 {
-    std::vector<std::pair<power, coeff>> v1 = numer.canonical_form();
-    std::vector<std::pair<power, coeff>> v2 = denom.canonical_form();
+    //std::vector<std::pair<power, coeff>> v1 = numer.canonical_form();
+    //std::vector<std::pair<power, coeff>> v2 = denom.canonical_form();
+    std::pair<power, coeff> leading = denom.canonical_form()[0];
+
 
     polynomial remainder = numer.canonical_form();
 
@@ -457,7 +460,7 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
     while(remainder >= denom)
     {
         // Divide the first term of the remainder by the first term of the denominator
-        std::pair<power, coeff> divide = remainder.getPolyVec()[0] / v2[0];
+        std::pair<power, coeff> divide = remainder.canonical_form()[0] / leading;
 
         if(divide.second == 0)
         {
