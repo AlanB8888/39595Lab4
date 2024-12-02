@@ -462,10 +462,10 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
         // Divide the first term of the remainder by the first term of the denominator
         std::pair<power, coeff> divide = remainder.canonical_form()[0] / leading;
 
-        if(divide.second == 0)
-        {
-            break;
-        }
+        // if(divide.second == 0)
+        // {
+        //     break;
+        // }
 
         // Multiply the result by the denominator
         polynomial curr = denom * divide;
