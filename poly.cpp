@@ -465,7 +465,7 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
         }
 
         // Multiply the result by the denominator
-        polynomial curr = divide * denom;
+        polynomial curr = denom * divide;
 
         // Subtract the result from the remainder
         remainder = remainder + (-1 * curr);
