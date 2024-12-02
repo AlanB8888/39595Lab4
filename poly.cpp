@@ -227,7 +227,7 @@ std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock chunkc are all sorted
 
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-    std::cout << "sorting for divided time: " << duration.count() << " ms\n";
+    //std::cout << "sorting for divided time: " << duration.count() << " ms\n";
 
 
 
@@ -265,7 +265,7 @@ std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
      end = std::chrono::steady_clock::now(); //end clock chunkc are all sorted
 
      duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-    std::cout << "mergeing time: " << duration.count() << " ms\n";
+    //std::cout << "mergeing time: " << duration.count() << " ms\n";
 
     //following code is O(n), combines like terms
     std::vector<std::pair<power, coeff>>::iterator ordIt = ordVec.begin();
@@ -458,6 +458,11 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
     {
         // Divide the first term of the remainder by the first term of the denominator
         std::pair<power, coeff> divide = remainder.canonical_form()[0] / v2[0];
+
+        if(divide.second == 0)
+        {
+            break;
+        }
 
         // Multiply the result by the denominator
         polynomial curr = divide * denom;
