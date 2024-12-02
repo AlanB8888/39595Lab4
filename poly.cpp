@@ -460,20 +460,13 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
     while(remainder >= denom)
     {
         // Divide the first term of the remainder by the first term of the denominator
-        auto canon = remainder.canonical_form();
-        std::pair<power, coeff> divide = canon[0] / leading;
+        std::pair<power, coeff> divide = remainder.canonical_form()[0] / leading;
 
-        int i = 1;
-        int size = canon.size();
-        while(divide.second == 0 && i < size)
-        {
-            divide = canon[i] / leading;
-        }
-        if(i = size - 1)
+        if(divide.second == 0)
         {
             break;
         }
-        
+
         // Multiply the result by the denominator
         polynomial curr = denom * divide;
 
