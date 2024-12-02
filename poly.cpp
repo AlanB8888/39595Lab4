@@ -181,6 +181,60 @@ void sortForThreads(const std::vector<std::pair<power, coeff>> &chunk, std::vect
     });
     threadSorts = chunkSort;
 }
+std::vector<std::pair<power, coeff>> vectorCanon(std::vector<std::pair<power, coeff>> &makeCanon) {
+ //way too slow!
+    //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();//start clock to time the sorting of the divided vecs
+    std::vector<std::pair<power, coeff>> canVec;
+    
+    if (makeCanon.empty()){ //if empty say its 0,0
+        makeCanon.push_back(std::make_pair(0, 0));
+        return makeCanon;
+    }
+    
+
+    std::sort(makeCanon.begin(), makeCanon.end(), [](const std::pair<power, coeff> &a, const std::pair<power, coeff> &b) {
+        return a.first > b.first;  // 
+    });
+    //following code is O(n), combines like terms
+    std::vector<std::pair<power, coeff>>::iterator ordIt = makeCanon.begin();
+    std::vector<std::pair<power, coeff>>::iterator ordItNext = ordIt;
+    std::vector<std::pair<power, coeff>>::iterator ordEnd = makeCanon.end();
+    int curCoef = 0;
+    while(ordIt != ordEnd){
+        ordItNext = ordIt+1;
+        size_t itPower = ordIt->first;
+        if(ordItNext != ordEnd){
+            size_t nextItPower = ordItNext->first;
+            //every element is accumulated
+            curCoef = curCoef + ordIt->second;
+            if(itPower != nextItPower){
+                if(curCoef != 0){
+                    canVec.push_back(std::make_pair(itPower, curCoef));
+                    curCoef = 0;//reset coef accumulator for next power
+                }
+                ordIt++;
+            }
+            else{
+                //ddont need to add any terms yet, not done accumulation, just go to next iterator
+                ordIt++;
+            }
+        }else{
+            //orditnext is poining to end, ordit is pointing to last existing term
+            //can just accumulte and add
+            curCoef = curCoef + ordIt->second;
+            if(curCoef != 0){
+                canVec.push_back(std::make_pair(itPower, curCoef));
+                curCoef = 0;//reset coef accumulator for next power
+            }
+            ordIt++;
+        }
+    }
+
+    if (canVec.empty()){ //if empty say its 0,0
+        canVec.push_back(std::make_pair(0, 0));
+    }
+    return canVec;
+}
 unsigned int uIntPowTwo(unsigned int x) {
     if (x <= 0) return 0;
     x--;  
@@ -201,9 +255,10 @@ std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
         ordVec.push_back(std::make_pair(0, 0));
         return ordVec;
     }
-
+    ordVec = polyVec;
     
     //thread attempt...
+    /*
     unsigned int num_threadsOdd = std::min(static_cast<size_t>(std::thread::hardware_concurrency()), polyVec.size());//128 on my machine
     
     unsigned int num_threads = uIntPowTwo(num_threadsOdd);
@@ -261,23 +316,14 @@ std::vector<std::pair<power, coeff>> polynomial::canonical_form() const{
 
      ordVec = workingOnMerge[0];  // Start with the first sorted chunk
 
-
-        //polynomial printPoly8(ordVec.begin(),ordVec.end());
-        //printPoly8.print();
-    /*for (size_t i = 1; i < workingOnMerge.size(); ++i) {
-        std::vector<std::pair<power, coeff>> temp;
-        // Merge the current merged vector with the next chunk
-        std::merge(ordVec.begin(), ordVec.end(),
-                   workingOnMerge[i].begin(), workingOnMerge[i].end(),
-                   std::back_inserter(temp));
-        ordVec = temp;  // Update mergedVec to the newly merged result
-    }*/
-
      end = std::chrono::steady_clock::now(); //end clock chunkc are all sorted
 
      //duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
     //std::cout << "mergeing time: " << duration.count() << " ms\n";
-
+*/
+    std::sort(ordVec.begin(), ordVec.end(), [](const std::pair<power, coeff> &a, const std::pair<power, coeff> &b) {
+        return a.first > b.first;  // 
+    });
     //following code is O(n), combines like terms
     std::vector<std::pair<power, coeff>>::iterator ordIt = ordVec.begin();
     std::vector<std::pair<power, coeff>>::iterator ordItNext = ordIt;
@@ -361,18 +407,16 @@ std::pair<power, coeff> multiply2terms(std::pair<power, coeff> t1, std::pair<pow
 }
 
 void sectionMultiplier(const std::vector<std::pair<power, coeff>> &lhs, const std::vector<std::pair<power, coeff>> &rhs, std::vector<std::pair<power, coeff>> &threadAnswers){
-    std::vector<std::pair<power, coeff>> answer;
     for(std::pair<power, coeff> pairL : lhs)
     {
         for(std::pair<power, coeff> pairR : rhs)
         {
 
-            std::pair<power, coeff> product = multiply2terms(pairL, pairR);
-            answer.push_back(product);
+            threadAnswers.push_back(multiply2terms(pairL, pairR));
         }
-
+        //threadAnswers = vectorCanon(threadAnswers);
     }
-    threadAnswers = answer;
+
 }
 
 polynomial operator*(const std::pair<power, coeff>& pair, const polynomial& poly) {
@@ -386,12 +430,6 @@ polynomial operator*(const polynomial &lhs, const polynomial &rhs)
     // size_t degree = lhs.find_degree_of() + rhs.find_degree_of();
     std::vector<std::pair<power, coeff>> lhsPoly = lhs.getPolyVec();
     std::vector<std::pair<power, coeff>> rhsPoly = rhs.getPolyVec();
-
-    //TODO: make this multithreaded
-    /*polynomial printPoly1(lhsPoly.begin(),lhsPoly.end());
-    printPoly1.print();
-    polynomial printPoly2(rhsPoly.begin(),rhsPoly.end());
-    printPoly2.print();*/
 
     //Multiply each term with each other term in the other polynomial and sum everything
     //this is the O(n^2) method, may want to use O(nlogn) FFT method... only if necessary it is pretty wierd
@@ -417,14 +455,13 @@ polynomial operator*(const polynomial &lhs, const polynomial &rhs)
 
     //polynomial printPoly(othVec.begin(),othVec.end());
     //printPoly.print();
-
+    std::vector<std::pair<power, coeff>> divVec;
     for (int i = 0; i < num_threads; i++) {
         long start = i * range;               
         long end = (i == num_threads - 1) ? bigPolySize : (i + 1) * range;
         //std::cout << "i: " << i << "\n"; 
         //std::cout << "start: " << start << "\n"; 
         //std::cout << "end: " << end << "\n";  
-        std::vector<std::pair<power, coeff>> divVec;
         if (threadLeft) {
             divVec.assign(lhsPoly.begin() + start, lhsPoly.begin() + end);  // Slice lhsPoly
         } else {
@@ -433,6 +470,8 @@ polynomial operator*(const polynomial &lhs, const polynomial &rhs)
         //polynomial printPoly3(divVec.begin(),divVec.end());
         //printPoly3.print();
         threads.push_back(std::thread(sectionMultiplier, divVec, othVec, std::ref(threadAnswers[i])));
+        divVec.clear();
+        
     }
 
 
@@ -441,10 +480,17 @@ polynomial operator*(const polynomial &lhs, const polynomial &rhs)
     }//wait for thread answers to be full
 
     std::vector<std::pair<power, coeff>> totVec; //will hold the final product
-    for(std::vector<std::pair<power, coeff>> ans : threadAnswers){
+    /*for(std::vector<std::pair<power, coeff>> &ans : threadAnswers){
         totVec.insert(totVec.end(), ans.begin(), ans.end());
+        polynomial result(totVec.begin(), totVec.end());
+        totVec = result.canonical_form();
+        //break; //MAJOR MEMORY ALLOCKER
+    }*/
+    for(std::vector<std::pair<power, coeff>> &ans : threadAnswers){
+        totVec.insert(totVec.end(), ans.begin(), ans.end());
+        totVec = vectorCanon(totVec);
+        //break; //MAJOR MEMORY ALLOCKER
     }
-
     polynomial result(totVec.begin(), totVec.end());
     return result;
 
@@ -486,7 +532,7 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
         remainder = remainder + (-1 * curr);
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-
+        std::cout << "timing inside modulo..." << '\n';
         std::cout << duration.count() << '\n';
 
     }
