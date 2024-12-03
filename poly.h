@@ -48,7 +48,7 @@ public:
     polynomial(int k); //copy from integer 
 
     //USER DEFINED TO CONVERT AN std::pair<power, coeff> TO POLYNOMIAL
-    polynomial(std::pair<power, coeff> pair); //copy from integer 
+    polynomial(std::pair<power, coeff> pair);  
 
     //user added for copy
     polynomial(std::vector<std::pair<power, coeff>> vec);
@@ -146,6 +146,8 @@ polynomial operator+(const polynomial &lhs, const polynomial &rhs);
 std::pair<power, coeff> operator/(const std::pair<power, coeff>& numer, const std::pair<power, coeff>& div);
 
 polynomial operator%(const polynomial &lhs, const polynomial &rhs);
+
+polynomial specialSub(const polynomial &big, const polynomial &small);
 
 //polynomial operator*(const std::pair<power, coeff>& pair, const polynomial& poly);
 

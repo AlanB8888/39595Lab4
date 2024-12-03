@@ -3,7 +3,10 @@
 #include <thread>
 #include <algorithm>
 #include <queue>
-
+#include <utility>
+#include <vector>
+#include <memory>
+#include <mutex>
 
 polynomial::polynomial(){
     polyVec.push_back(std::make_pair(0, 0)); //construct with 0 coeff 0 power only
@@ -384,6 +387,7 @@ bool polynomial::operator>=(const polynomial &other)
 
 //FREE FUNCTIONS
 
+
 polynomial operator+(const polynomial &lhs, const polynomial &rhs) {
 
 
@@ -398,6 +402,60 @@ polynomial operator+(const polynomial &lhs, const polynomial &rhs) {
     polynomial result(sumVec.begin(), sumVec.end());
 
     return (result.canonical_form());
+
+
+
+    // //Add in parallel
+    // std::vector<std::pair<power, coeff>> leftVec = lhs.getPolyVec();
+    // std::vector<std::pair<power, coeff>> rightVec = rhs.getPolyVec();
+    // int maxDegree = lhs.find_degree_of() >= rhs.find_degree_of() ? lhs.find_degree_of() : rhs.find_degree_of();
+    // bool leftBigger = lhs.find_degree_of() >= rhs.find_degree_of();
+
+    // std::vector<std::pair<power, coeff>> result;
+    // result.reserve(maxDegree);
+
+    // int numThreads = std::thread::hardware_concurrency();
+    // int numChunks = 1;
+    // if(leftBigger)
+    // {
+    //     if(numThreads < rhs.find_degree_of() + 1)
+    //     {
+    //         numChunks = (rhs.find_degree_of() + 1 + numThreads - 1) / numThreads;
+    //     }
+    // }
+    // else
+    // {
+    //     if(numThreads < lhs.find_degree_of() + 1)
+    //     {
+    //         numChunks = (lhs.find_degree_of() + 1 + numThreads - 1) / numThreads;
+    //     }
+    // }
+    
+
+    // for(int i = 0; i < numChunks; i++)
+    // {
+    //     int start = numThreads * i;
+    //     int end = ((start + numThreads) > numChunks) ? numChunks : (start + numThreads);
+
+    //     //CALL ADDITION ON EACH CHUNK
+    //     if(leftBigger)
+    //     {
+    //         addChunk(rightVec, leftVec, start, end);
+    //     }
+    //     else
+    //     {
+    //         addChunk(leftVec, rightVec, start, end);
+    //     }
+        
+    // }
+
+    // // Wait for all threads to complete
+    // for (auto& t : threads) {
+    //     t.join();
+    // }
+
+    // polynomial sum(result);
+    // return sum;
 
 }
 
@@ -504,11 +562,237 @@ std::pair<power, coeff> operator/(const std::pair<power, coeff>& numer, const st
     return answer;
 }
 
+class Base
+{
+    public:
+
+    virtual int getIter() = 0;
+    virtual std::pair<power, coeff> getPair() = 0;
+};
+
+class Del : public Base
+{
+    public:
+    int iter;
+
+    int getIter()
+    {
+        return iter;
+    }
+
+    std::pair<power, coeff> getPair()
+    {
+        return {-1,-1};
+    }
+
+    Del(int i) : iter(i){}
+};
+
+class Insert : public Base
+{
+    public:
+    std::pair<int, std::pair<power, coeff>> pair;
+
+    int getIter()
+    {
+        return pair.first;
+    }
+
+    std::pair<power, coeff> getPair()
+    {
+        return pair.second;
+    }
+
+    Insert(std::pair<int, std::pair<power, coeff>> pair) : pair(pair){}
+};
+
+std::mutex changesMutex;
+std::mutex insertsMutex;
+std::mutex deletesMutex;
+
+int binarySearchPower(const std::vector<std::pair<power, coeff>>& arr, int target, bool* found) {
+    //Assumes it is in canonical form and thus descending order
+    int left = 0;
+    int right = arr.size() - 1;
+
+    while (left <= right) {
+        int mid = left + (right - left) / 2; // Find middle index
+
+        // Check if the target is at the middle
+        if (arr[mid].first == target) {
+            *found = true;
+            return mid; // Target found
+        }
+        // If target is greater, search in the left half
+        else if (arr[mid].first < target) {
+            right = mid - 1;
+        }
+        // If target is smaller, search in the right half
+        else {
+            left = mid + 1;
+        }
+    }
+    *found = false;
+    return left; // Target not found
+}
+
+void findAndUpdate(const std::vector<std::pair<power, coeff>> small, const std::vector<std::pair<power, coeff>> big, int start, int end,
+              std::vector<std::pair<int, int>>& changes, std::vector<std::pair<int, std::pair<power, coeff>>>& inserts, std::vector<int>& deletes, int i)
+{
+
+    bool found = true;
+    int index = binarySearchPower(big, small[i].first, &found); //look for index of portion with same power
+
+    std::cout << "Power: " << small[i].first << '\n';
+    //If not there, insert into vector at right place
+    if(!found)
+    {
+        std::lock_guard<std::mutex> lock(insertsMutex);
+        inserts.push_back({index, {small[i].first, -small[i].second}});
+    }
+
+    //If there
+    else
+    {
+        //Subtract coefficients
+        int difference = big[index].second - small[i].second;
+
+        if(difference == 0) //account for removal to keep in canonical form
+        {
+            std::lock_guard<std::mutex> lock(deletesMutex);
+            deletes.push_back(index); //Set to be removed
+        }
+
+        else
+        {
+            //Change the coefficient
+            std::lock_guard<std::mutex> lock(changesMutex);
+            changes.push_back({index, difference});
+        }
+    }
+    
+}
+//Subtract by finding common power first
+void subChunk(const std::vector<std::pair<power, coeff>>& small, const std::vector<std::pair<power, coeff>>& big, int start, int end,
+              std::vector<std::pair<int, int>>& changes, std::vector<std::pair<int, std::pair<power, coeff>>>& inserts, std::vector<int>& deletes)
+{
+    std::vector<std::thread> threads;
+
+    std::vector<std::pair<int, int>> changesDeref = changes;
+    std::vector<std::pair<int, std::pair<power, coeff>>> insertsDeref = inserts;
+    std::vector<int> deletesDeref = deletes;
+
+    for(int i = start; i < end; i++)
+    {
+        
+
+        threads.push_back(std::thread(findAndUpdate, small, big, start, end, std::ref(changesDeref), std::ref(insertsDeref), std::ref(deletesDeref), i));
+    }
+
+    for(int i = start; i < end; i++)
+    {
+        threads[i].join();
+    }
+
+    changes = changesDeref;
+    inserts = insertsDeref;
+    deletes = deletesDeref;
+}
+
+bool compareInsertsAndDels(std::shared_ptr<Base> a, std::shared_ptr<Base> b)
+{
+    return a->getIter() > b->getIter(); //sort descending order then wont need to worry about accounting for previous inserts
+}
+
+polynomial changeBig(const polynomial &big, std::vector<std::pair<int, int>>& changes, std::vector<std::pair<int, std::pair<power, coeff>>>& inserts, std::vector<int>& deletes)
+{
+    std::vector<std::pair<power, coeff>> result = big.getPolyVec();
+
+    std::vector<std::shared_ptr<Base>> insertAndDel;
+
+    for(auto insert : inserts)
+    {
+        insertAndDel.push_back(std::make_shared<Insert>(insert));
+    }
+
+    for(auto del : deletes)
+    {
+        insertAndDel.push_back(std::make_shared<Del>(del));
+    }
+    
+
+    std::sort(insertAndDel.begin(), insertAndDel.end(), compareInsertsAndDels);
+
+    for(auto pair : changes)
+    {
+        result[pair.first].second = pair.second; //Change coefficients
+    }
+
+    for(auto item : insertAndDel) //insert and del from the back
+    {
+        if(typeid(*item) == typeid(Del)) //delete
+        {
+            result.erase(result.begin() + item->getIter());
+        }
+
+        else if(typeid(*item) == typeid(Insert)) //insert
+        {
+            result.insert(result.begin() + item->getIter(), item->getPair());
+        }
+    }
+
+    return polynomial(result);
+
+}
+
+//Subtracting only when both is already in canonical form. big - small
+polynomial specialSub(const polynomial &big, const polynomial &small)
+{
+    auto smallVec = small.getPolyVec();
+    int maxDegree = big.find_degree_of();
+
+    //std::vector<std::pair<power, coeff>> result = big.getPolyVec();
+
+    int numThreads = std::thread::hardware_concurrency();
+    int numChunks = 1;
+    if(numThreads < smallVec.size() + 1)
+    {
+        numChunks = (smallVec.size() + 1 + numThreads - 1) / numThreads;
+    }
+    
+    //Position to change, new integer to change coefficient to
+    std::vector<std::pair<int, int>> changes;
+
+    //Position to put it in (before the other inserts), new polynomial term
+    std::vector<std::pair<int, std::pair<power, coeff>>> inserts;
+
+    //Position to delete in (before the inserts and the other deletes)
+    std::vector<int> deletes;
+
+    for(int i = 0; i < numChunks; i++)
+    {
+        int start = numThreads * i;
+        int end = ((start + numThreads) > smallVec.size()) ? smallVec.size() : (start + numThreads);
+        
+        //std::cout << "Start and end BIG ONE: " << start << " " << end << '\n';
+        std::cout << "NUM THREADS: " << numThreads << "\n";
+        //CALL SUBTRACTION ON EACH CHUNK
+        subChunk(small.getPolyVec(), big.getPolyVec(), start, end, changes, inserts, deletes);
+        
+    }
+
+    polynomial sum = changeBig(big, changes, inserts, deletes);
+
+    return sum;
+
+}
+
 polynomial operator%(const polynomial &numer, const polynomial &denom)
 {
     //std::vector<std::pair<power, coeff>> v1 = numer.canonical_form();
     //std::vector<std::pair<power, coeff>> v2 = denom.canonical_form();
     std::pair<power, coeff> leading = denom.canonical_form()[0];
+    polynomial canonDenom = denom.canonical_form();
 
 
     polynomial remainder = numer.canonical_form();
@@ -528,10 +812,12 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
         }
 
         // Multiply the result by the denominator
-        polynomial curr = denom * divide;
+        polynomial curr = canonDenom * divide;
 
         // Subtract the result from the remainder
-        remainder = remainder + (-1 * curr);
+        //remainder = remainder + (-1 * curr);
+        remainder = specialSub(remainder, curr);
+
         // std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock
         // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
         // std::cout << "timing inside modulo..." << '\n';
