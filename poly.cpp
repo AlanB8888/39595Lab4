@@ -829,8 +829,8 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
         polynomial curr = canonDenom * divide;
 
         // Subtract the result from the remainder
-        //remainder = remainder + (-1 * curr);
-        remainder = specialSub(remainder, curr);
+        remainder = remainder + (-1 * curr);
+        //remainder = specialSub(remainder, curr);
 
         // std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock
         // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
