@@ -513,12 +513,13 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
 
     polynomial remainder = numer.canonical_form();
 
+    int i = 0;
 
     while(remainder >= denom)
     {
-        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+        //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
         // Divide the first term of the remainder by the first term of the denominator
-        std::pair<power, coeff> divide = remainder.canonical_form()[0] / leading;
+        std::pair<power, coeff> divide = remainder.getPolyVec()[0] / leading;
 
         if(divide.second == 0)
         {
@@ -531,12 +532,15 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
 
         // Subtract the result from the remainder
         remainder = remainder + (-1 * curr);
-        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-        std::cout << "timing inside modulo..." << '\n';
-        std::cout << duration.count() << '\n';
+        // std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock
+        // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+        // std::cout << "timing inside modulo..." << '\n';
+        // std::cout << duration.count() << '\n';
+        i++;
 
     }
+
+    std::cout << "Went through modulus " << i << " times\n";
 
     return remainder;
 }

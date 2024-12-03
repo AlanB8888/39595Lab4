@@ -61,7 +61,7 @@ int main()
     std::vector<std::pair<power, coeff>> inputSized1; //polynomial of [size1] terms of form  1+2x+3x^2+4^x3...
     std::vector<std::pair<power, coeff>> inputSized2; //polynomial of [size2] terms of form  3+6x+9x^2+12^x3...
     int size1 = 4;
-    int size2 = 10;
+    int size2 = 10000;
 
     for(int i = 0; i< size1; i++){
         inputSized1.push_back(std::make_pair(i,1));
@@ -230,18 +230,18 @@ int main()
      std::cout << "MOD 2 CANONIZATION TIME: " << duration.count() << " ms\n";
 
     std::cout << "POLYS: \n";
-    ps1.print();
-    ps2.print();
+    // ps1.print();
+    // ps2.print();
 
     std::cout << "MOD1: \n";
     // // p1.print();
     // // p2.print();
-    mod1.print();
+    //mod1.print();
     std::cout << mod1.find_degree_of() << '\n';
     std::cout << "MOD2: ";
     // // p3.print();
     // // p2.print();
-    mod2.print();
+    //mod2.print();
     std::cout << mod2.find_degree_of() << '\n';
 
 
