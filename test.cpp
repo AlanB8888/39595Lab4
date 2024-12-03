@@ -54,7 +54,7 @@ int main()
     // }
 
 
-    std::vector<std::pair<power, coeff>> input1 = {{2,2}, {1,2}, {0,2}, {7,0}};
+    std::vector<std::pair<power, coeff>> input1 = {{4,2}, {1,2}, {0,2}, {7,0}};
     std::vector<std::pair<power, coeff>> input2 = {{4,6}, {2,6}, {1,6}, {0,6}};
     std::vector<std::pair<power, coeff>> input3 = {{9,10}, {6,6}, {4,4}, {0,2}};
 
@@ -135,19 +135,19 @@ int main()
     // //TEST MULTIPLY:
     // //===================================================
 
-       std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();//start clock to time adding 2 polys
-      polynomial mul1 = ps1 * ps2;
-       std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock
-       auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-       std::cout << "MUL 1 COMPUTIATION TIME: " << duration.count() << " ms\n";
-       std::cout << "mul1 vector no canonization :\n";
-       mul1.print();
+    //    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();//start clock to time adding 2 polys
+    //   polynomial mul1 = ps1 * ps2;
+    //    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock
+    //    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    //    std::cout << "MUL 1 COMPUTIATION TIME: " << duration.count() << " ms\n";
+    //    std::cout << "mul1 vector no canonization :\n";
+    //    mul1.print();
 
-       begin = std::chrono::steady_clock::now();//start clock to time 
-       std::vector<std::pair<power, coeff>> holdCanVec = mul1.canonical_form();
-       end = std::chrono::steady_clock::now(); //end clock
-       duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-       std::cout << "MUL 1 CANONIZATION TIME: " << duration.count() << " ms\n";
+    //    begin = std::chrono::steady_clock::now();//start clock to time 
+    //    std::vector<std::pair<power, coeff>> holdCanVec = mul1.canonical_form();
+    //    end = std::chrono::steady_clock::now(); //end clock
+    //    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    //    std::cout << "MUL 1 CANONIZATION TIME: " << duration.count() << " ms\n";
 
      
     //   std::cout << "ps1 vector :\n";
@@ -275,12 +275,12 @@ int main()
 
     //test SPECIAL SUB
 
-    /*polynomial first = ps1.canonical_form();
-    polynomial second = ps2.canonical_form();
+    polynomial first = p1.canonical_form();
+    polynomial second = p3.canonical_form();
     polynomial result = specialSub(second, first);
     second.print();
     first.print();
-    result.print();*/
+    result.print();
     
     
 

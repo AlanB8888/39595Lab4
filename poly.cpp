@@ -605,6 +605,7 @@ class Base
     public:
 
     virtual int getIter() = 0;
+    virtual void print() = 0;
     virtual std::pair<power, coeff> getPair() = 0;
 };
 
@@ -621,6 +622,11 @@ class Del : public Base
     std::pair<power, coeff> getPair()
     {
         return {-1,-1};
+    }
+
+    void print()
+    {
+        std::cout << iter;
     }
 
     Del(int i) : iter(i){}
@@ -641,6 +647,12 @@ class Insert : public Base
         return pair.second;
     }
 
+    void print()
+    {
+        std::cout << pair.first << ": (" << pair.second.first << ", " << pair.second.second << ")";
+    }
+
+
     Insert(std::pair<int, std::pair<power, coeff>> pair) : pair(pair){}
 };
 
@@ -657,7 +669,6 @@ void findAndUpdate(const std::vector<std::pair<power, coeff>> small, const std::
     bool found = true;
     int index = binarySearchPower(big, small[i].first, &found); //look for index of portion with same power
 
-    std::cout << "Power: " << small[i].first << '\n';
     //If not there, insert into vector at right place
     if(!found)
     {
@@ -711,11 +722,42 @@ void subChunk(const std::vector<std::pair<power, coeff>>& small, const std::vect
     changes = changesDeref;
     inserts = insertsDeref;
     deletes = deletesDeref;
+
 }
 
 bool compareInsertsAndDels(std::shared_ptr<Base> a, std::shared_ptr<Base> b)
 {
-    return a->getIter() > b->getIter(); //sort descending order then wont need to worry about accounting for previous inserts
+    if(a->getIter() > b->getIter())
+    {
+        return true;
+    }
+
+    else if(a->getIter() == b->getIter()) //Same location
+    {
+        if(typeid(*a) == typeid(Insert) && typeid(*b) == typeid(Insert)) //both inserts
+        {
+            return a->getPair().first < b->getPair().first; //Want to order in descending order of power
+        }
+        else if(typeid(*a) == typeid(Del) && typeid(*b) == typeid(Insert))
+        {
+            return true;
+        }
+        else if(typeid(*a) == typeid(Insert) && typeid(*b) == typeid(Del))
+        {
+            return false;
+        }
+        else //2 deletes same space doesnt matter so
+        {
+            return true;
+        }
+    }
+
+    else
+    {
+        return false;
+    }
+
+   //sort descending order then wont need to worry about accounting for previous inserts
 }
 
 polynomial changeBig(const polynomial &big, std::vector<std::pair<int, int>>& changes, std::vector<std::pair<int, std::pair<power, coeff>>>& inserts, std::vector<int>& deletes)
@@ -734,6 +776,14 @@ polynomial changeBig(const polynomial &big, std::vector<std::pair<int, int>>& ch
         insertAndDel.push_back(std::make_shared<Del>(del));
     }
     
+    std::cout << "insertAndDel Size: " << insertAndDel.size() << "\n";
+    for(auto i : insertAndDel)
+    {
+        i->print();
+        std::cout << ", ";
+    }
+
+    std::cout << '\n';
 
     std::sort(insertAndDel.begin(), insertAndDel.end(), compareInsertsAndDels);
 
@@ -789,12 +839,13 @@ polynomial specialSub(const polynomial &big, const polynomial &small)
         int end = ((start + numThreads) > smallVec.size()) ? smallVec.size() : (start + numThreads);
         
         //std::cout << "Start and end BIG ONE: " << start << " " << end << '\n';
-        std::cout << "NUM THREADS: " << numThreads << "\n";
+        //std::cout << "NUM THREADS: " << numThreads << "\n";
         //CALL SUBTRACTION ON EACH CHUNK
         subChunk(small.getPolyVec(), big.getPolyVec(), start, end, changes, inserts, deletes);
         
     }
 
+    
     polynomial sum = changeBig(big, changes, inserts, deletes);
 
     return sum;
@@ -821,7 +872,7 @@ polynomial operator%(const polynomial &numer, const polynomial &denom)
 
         if(divide.second == 0)
         {
-            std::cout << "GOT HERE" << '\n';
+
             break;
         }
 
