@@ -1,25 +1,17 @@
-==1866541== Memcheck, a memory error detector
-==1866541== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==1866541== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
-==1866541== Command: ./a.out
-==1866541== 
+==1878526== Memcheck, a memory error detector
+==1878526== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==1878526== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==1878526== Command: ./a.out
+==1878526== 
+==1878526== Warning: set address range perms: large range [0x251cc028, 0x351cc058) (noaccess)
+==1878526== Warning: set address range perms: large range [0x151cb028, 0x251cb058) (noaccess)
 Threads Avalible: 16
-32017
-31654
-GOT HERE
-MOD 1 COMPUTIATION TIME: 135766 ms
-MOD 1 CANONIZATION TIME: 13940 ms
-MOD 2 COMPUTIATION TIME: 27869 ms
-MOD 2 CANONIZATION TIME: 75 ms
-MOD1: 
-6005435
-MOD2: 4
-==1866541== 
-==1866541== HEAP SUMMARY:
-==1866541==     in use at exit: 0 bytes in 0 blocks
-==1866541==   total heap usage: 6,724 allocs, 6,724 frees, 5,014,298,400 bytes allocated
-==1866541== 
-==1866541== All heap blocks were freed -- no leaks are possible
-==1866541== 
-==1866541== For lists of detected and suppressed errors, rerun with: -s
-==1866541== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==1878526== 
+==1878526== HEAP SUMMARY:
+==1878526==     in use at exit: 0 bytes in 0 blocks
+==1878526==   total heap usage: 70 allocs, 70 frees, 1,073,819,344 bytes allocated
+==1878526== 
+==1878526== All heap blocks were freed -- no leaks are possible
+==1878526== 
+==1878526== For lists of detected and suppressed errors, rerun with: -s
+==1878526== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

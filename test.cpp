@@ -60,15 +60,15 @@ int main()
 
     std::vector<std::pair<power, coeff>> inputSized1; //polynomial of [size1] terms of form  1+2x+3x^2+4^x3...
     std::vector<std::pair<power, coeff>> inputSized2; //polynomial of [size2] terms of form  3+6x+9x^2+12^x3...
-    int size1 = 3;
-    int size2 = 4;
+    int size1 = 4;
+    int size2 = 10;
 
     for(int i = 0; i< size1; i++){
-        inputSized1.push_back(std::make_pair(i,i+1));
+        inputSized1.push_back(std::make_pair(i,1));
         //inputSized1.push_back(std::make_pair(6*i,(i+7) * (-1 * i)));
     }
     for(int i = 0; i< size2; i++){
-        inputSized2.push_back(std::make_pair(i,3*(i+1)));
+        inputSized2.push_back(std::make_pair(2*i,(i+1)));
     }
 
     polynomial p1(input1.begin(), input1.end());
@@ -135,28 +135,28 @@ int main()
     // //TEST MULTIPLY:
     // //===================================================
 
-      std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();//start clock to time adding 2 polys
-      polynomial mul1 = ps1 * ps2;
-      std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock
-      auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-      std::cout << "MUL 1 COMPUTIATION TIME: " << duration.count() << " ms\n";
-      // std::cout << "mul1 vector no canonization :\n";
-    //  //mul1.print();
+    //   std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();//start clock to time adding 2 polys
+    //   polynomial mul1 = ps1 * ps2;
+    //   std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock
+    //   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    //   std::cout << "MUL 1 COMPUTIATION TIME: " << duration.count() << " ms\n";
+    //   // std::cout << "mul1 vector no canonization :\n";
+    // //  //mul1.print();
 
-      begin = std::chrono::steady_clock::now();//start clock to time 
-      std::vector<std::pair<power, coeff>> holdCanVec = mul1.canonical_form();
-      end = std::chrono::steady_clock::now(); //end clock
-      duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-      std::cout << "MUL 1 CANONIZATION TIME: " << duration.count() << " ms\n";
+    //   begin = std::chrono::steady_clock::now();//start clock to time 
+    //   std::vector<std::pair<power, coeff>> holdCanVec = mul1.canonical_form();
+    //   end = std::chrono::steady_clock::now(); //end clock
+    //   duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    //   std::cout << "MUL 1 CANONIZATION TIME: " << duration.count() << " ms\n";
 
      
-      std::cout << "ps1 vector :\n";
-      ps1.print();
-           std::cout << "ps2 vector :\n";
-      ps2.print();
-       std::cout << "mul1 vector :\n";
-         polynomial cans1(holdCanVec.begin(), holdCanVec.end());
-      cans1.print();
+    //   std::cout << "ps1 vector :\n";
+    //   ps1.print();
+    //        std::cout << "ps2 vector :\n";
+    //   ps2.print();
+    //    std::cout << "mul1 vector :\n";
+    //      polynomial cans1(holdCanVec.begin(), holdCanVec.end());
+    //   cans1.print();
     
      /*begin = std::chrono::steady_clock::now();//start clock to time adding   
      polynomial mul2 = ps1 * (int)5;
@@ -204,7 +204,7 @@ int main()
 
     //TEST MODULUS:
     //===================================================
-    /*
+    
      std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();//start clock to time adding 2 polys
      polynomial mod1 = ps1 % ps2;
      std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now(); //end clock
@@ -229,17 +229,21 @@ int main()
      duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
      std::cout << "MOD 2 CANONIZATION TIME: " << duration.count() << " ms\n";
 
+    std::cout << "POLYS: \n";
+    ps1.print();
+    ps2.print();
 
     std::cout << "MOD1: \n";
     // // p1.print();
     // // p2.print();
+    mod1.print();
     std::cout << mod1.find_degree_of() << '\n';
     std::cout << "MOD2: ";
     // // p3.print();
     // // p2.print();
-    // //mod2.print();
+    mod2.print();
     std::cout << mod2.find_degree_of() << '\n';
-*/
+
 
     //TEST MODULUS:
     //===================================================
