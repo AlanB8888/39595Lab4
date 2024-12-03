@@ -391,7 +391,6 @@ bool polynomial::operator>=(const polynomial &other)
 polynomial operator+(const polynomial &lhs, const polynomial &rhs) {
 
 
-    //just add them, by joinng vecs, canonize/simplify somewhere else
     //O(n) pretty sure
 
     std::vector<std::pair<power, coeff>> sumVec = lhs.getPolyVec();
@@ -458,23 +457,62 @@ polynomial operator+(const polynomial &lhs, const polynomial &rhs) {
     // return sum;
 
 }
+int binarySearchPower(const std::vector<std::pair<power, coeff>>& arr, int target, bool* found) {
+    //Assumes it is in canonical form and thus descending order
+    int left = 0;
+    int right = arr.size() - 1;
 
+    while (left <= right) {
+        int mid = left + (right - left) / 2; // Find middle index
+
+        // Check if the target is at the middle
+        if (arr[mid].first == target) {
+            *found = true;
+            return mid; // Target found
+        }
+        // If target is greater, search in the left half
+        else if (arr[mid].first < target) {
+            right = mid - 1;
+        }
+        // If target is smaller, search in the right half
+        else {
+            left = mid + 1;
+        }
+    }
+    *found = false;
+    return left; // Target not found
+}
 std::pair<power, coeff> multiply2terms(std::pair<power, coeff> t1, std::pair<power, coeff> t2)
 {
     return {t1.first + t2.first, t1.second * t2.second};
 }
 
 void sectionMultiplier(const std::vector<std::pair<power, coeff>> &lhs, const std::vector<std::pair<power, coeff>> &rhs, std::vector<std::pair<power, coeff>> &threadAnswers){
+    //std::vector<std::pair<power, coeff>> passPoly;
+    //int i=0;
+    bool termFound; 
+    int termIdx;
     for(std::pair<power, coeff> pairL : lhs)
     {
+        //i=0;
         for(std::pair<power, coeff> pairR : rhs)
         {
+            //if (i<1006){
+            //starts empty so should be able to be continoually sorted?
+            termFound = false;
+            termIdx = binarySearchPower(threadAnswers, multiply2terms(pairL, pairR).first, &termFound);
+            if(termFound){
+                threadAnswers[termIdx].second = threadAnswers[termIdx].second + multiply2terms(pairL, pairR).second;
+            }else{
+                threadAnswers.insert((threadAnswers.begin() + termIdx),multiply2terms(pairL, pairR));
+            }
+            //i++;
+            //}
 
-            threadAnswers.push_back(multiply2terms(pairL, pairR));
         }
-        
+        //std::cout << "i: " << i << "\n"; 
     }
-    threadAnswers = vectorCanon(threadAnswers);
+    std::cout << "threadawnserssize: " << threadAnswers.size() << "\n"; 
 
 }
 
@@ -487,8 +525,8 @@ polynomial operator*(const std::pair<power, coeff>& pair, const polynomial& poly
 polynomial operator*(const polynomial &lhs, const polynomial &rhs) 
 {
     // size_t degree = lhs.find_degree_of() + rhs.find_degree_of();
-    std::vector<std::pair<power, coeff>> lhsPoly = lhs.getPolyVec();
-    std::vector<std::pair<power, coeff>> rhsPoly = rhs.getPolyVec();
+    std::vector<std::pair<power, coeff>> lhsPoly = lhs.canonical_form();
+    std::vector<std::pair<power, coeff>> rhsPoly = rhs.canonical_form();
 
     //Multiply each term with each other term in the other polynomial and sum everything
     //this is the O(n^2) method, may want to use O(nlogn) FFT method... only if necessary it is pretty wierd
@@ -610,31 +648,7 @@ std::mutex changesMutex;
 std::mutex insertsMutex;
 std::mutex deletesMutex;
 
-int binarySearchPower(const std::vector<std::pair<power, coeff>>& arr, int target, bool* found) {
-    //Assumes it is in canonical form and thus descending order
-    int left = 0;
-    int right = arr.size() - 1;
-
-    while (left <= right) {
-        int mid = left + (right - left) / 2; // Find middle index
-
-        // Check if the target is at the middle
-        if (arr[mid].first == target) {
-            *found = true;
-            return mid; // Target found
-        }
-        // If target is greater, search in the left half
-        else if (arr[mid].first < target) {
-            right = mid - 1;
-        }
-        // If target is smaller, search in the right half
-        else {
-            left = mid + 1;
-        }
-    }
-    *found = false;
-    return left; // Target not found
-}
+//moved binarySearchPower to earlier declaration
 
 void findAndUpdate(const std::vector<std::pair<power, coeff>> small, const std::vector<std::pair<power, coeff>> big, int start, int end,
               std::vector<std::pair<int, int>>& changes, std::vector<std::pair<int, std::pair<power, coeff>>>& inserts, std::vector<int>& deletes, int i)
