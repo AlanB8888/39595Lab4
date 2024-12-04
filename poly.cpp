@@ -492,14 +492,16 @@ void sectionMultiplier(const std::vector<std::pair<power, coeff>> &lhs, const st
     //int i=0;
     bool termFound; 
     int termIdx;
-    for(std::pair<power, coeff> pairL : lhs)
+   
+    for(const std::pair<power, coeff> &pairL : lhs)
     {
+         termFound = false;
         //i=0;
-        for(std::pair<power, coeff> pairR : rhs)
+        for(const std::pair<power, coeff> &pairR : rhs)
         {
             //if (i<1006){
             //starts empty so should be able to be continoually sorted?
-            termFound = false;
+            
             termIdx = binarySearchPower(threadAnswers, multiply2terms(pairL, pairR).first, &termFound);
             if(termFound){
                 threadAnswers[termIdx].second = threadAnswers[termIdx].second + multiply2terms(pairL, pairR).second;
@@ -512,7 +514,7 @@ void sectionMultiplier(const std::vector<std::pair<power, coeff>> &lhs, const st
         }
         //std::cout << "i: " << i << "\n"; 
     }
-    std::cout << "threadawnserssize: " << threadAnswers.size() << "\n"; 
+    //std::cout << "threadawnserssize: " << threadAnswers.size() << "\n"; 
 
 }
 
@@ -584,10 +586,12 @@ polynomial operator*(const polynomial &lhs, const polynomial &rhs)
         //break; //MAJOR MEMORY ALLOCKER
     }*/
     for(std::vector<std::pair<power, coeff>> &ans : threadAnswers){
+
+
         totVec.insert(totVec.end(), ans.begin(), ans.end());
-        totVec = vectorCanon(totVec);
         //break; //MAJOR MEMORY ALLOCKER
     }
+           //totVec = vectorCanon(totVec);
     polynomial result(totVec.begin(), totVec.end());
     return result;
 
